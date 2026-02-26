@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pack Society | Premiere</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --dark-gold: #996515;
+            --black: #0a0a0a;
+            --grey: #1a1a1a;
+            --text: #e0e0e0;
+        }
+
+        body {
+            background-color: var(--black);
+            color: var(--text);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            border-bottom: 2px solid var(--gold);
+            background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: 4px;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .tagline {
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            color: var(--dark-gold);
+        }
+
+        /* Tabs Navigation */
+        .nav-tabs {
+            display: flex;
+            overflow-x: auto;
+            background: var(--grey);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #333;
+        }
+
+        .tab-link {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            background: none;
+            color: #888;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            transition: 0.3s;
+        }
+
+        .tab-link.active {
+            color: var(--gold);
+            border-bottom: 3px solid var(--gold);
+        }
+
+        /* Grid System */
+        .container { padding: 20px; max-width: 1200px; margin: auto; }
+        
+        .car-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            display: none; /* Hidden by default */
+        }
+
+        .car-grid.active { display: grid; }
+
+        .card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover { border-color: var(--gold); }
+
+        .card-img {
+            width: 100%;
+            height: 200px;
+            background: #222;
+            object-fit: cover;
+        }
+
+        .card-content { padding: 15px; }
+
+        .card-title {
+            color: var(--gold);
+            margin: 0;
+            font-size: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .owner-info { font-size: 0.85rem; color: #aaa; margin-top: 5px; }
+
+        .ig-link { color: var(--gold); text-decoration: none; font-size: 0.9rem; }
+
+        /* Voting Button */
+        .vote-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 15px;
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+        .vote-btn:active { background: var(--gold); color: black; }
+
+        /* Logistics Sections */
+        .section-title {
+            color: var(--gold);
+            border-left: 4px solid var(--gold);
+            padding-left: 15px;
+            margin: 40px 0 20px;
+        }
+
+        .sponsor-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .sponsor-box {
+            width: 120px;
+            height: 60px;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            color: #555;
+            border: 1px solid #333;
+        }
+
+        .subscribe-form {
+            background: #111;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        input[type="email"] {
+            padding: 12px;
+            width: 70%;
+            background: #222;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 4px;
+        }
+
+        .submit-btn {
+            padding: 12px 25px;
+            background: var(--gold);
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        footer { text-align: center; padding: 40px; font-size: 0.8rem; color: #555; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 class="logo">Pack Society</h1>
+        <p class="tagline">PREMIERE EVENT 2026</p>
+    </header>
+
+    <div class="nav-tabs">
+        <button class="tab-link active" onclick="openTab(event, 'combustion')">Combustion</button>
+        <button class="tab-link" onclick="openTab(event, 'ev')">EV</button>
+        <button class="tab-link" onclick="openTab(event, 'moto')">Motorcycles</button>
+        <button class="tab-link" onclick="openTab(event, 'heavy')">Heavy</button>
+        <button class="tab-link" onclick="openTab(event, 'info')">Logistics</button>
+    </div>
+
+    <div class="container">
+        
+        <div id="combustion" class="car-grid active">
+            </div>
+
+        <div id="ev" class="car-grid">
+            </div>
+
+        <div id="moto" class="car-grid">
+            </div>
+
+        <div id="heavy" class="car-grid">
+            </div>
+
+        <div id="info" class="car-grid" style="display:none; grid-template-columns: 1fr;">
+            
+            <section>
+                <h2 class="section-title">SPONSORS</h2>
+                <div class="sponsor-grid">
+                    <div class="sponsor-box">SPONSOR 1</div>
+                    <div class="sponsor-box">SPONSOR 2</div>
+                    <div class="sponsor-box">SPONSOR 3</div>
+                    <div class="sponsor-box">SPONSOR 4</div>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="section-title">FUTURE EVENTS</h2>
+                <p><strong>Spring Run:</strong> April 12th, 2026</p>
+                <p><strong>Midnight Track Day:</strong> June 30th, 2026</p>
+            </section>
+
+            <section class="subscribe-form">
+                <h2 style="color:var(--gold)">JOIN THE PACK</h2>
+                <p>Be the first to know about upcoming meets.</p>
+                <input type="email" placeholder="Enter email address">
+                <button class="submit-btn">SUBSCRIBE</button>
+            </section>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2026 PACK SOCIETY | ALL RIGHTS RESERVED
+    </footer>
+
+    <script>
+        // Simple tab switching logic
+        function openTab(evt, tabName) {
+            var i, x, tablinks;
+            x = document.getElementsByClassName("car-grid");
+            for (i = 0; i < x.length; i++) {
+                x[i].style.display = "none";
+                x[i].classList.remove("active");
+            }
+            tablinks = document.getElementsByClassName("tab-link");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = tabName === 'info' ? "block" : "grid";
+            evt.currentTarget.className += " active";
+        }
+
+        // Helper to generate placeholder cards
+        function createPlaceholders(containerId, categoryName) {
+            const container = document.getElementById(containerId);
+            for (let i = 1; i <= 10; i++) {
+                container.innerHTML += `
+                    <div class="card">
+                        <div class="card-img" style="display:flex; align-items:center; justify-content:center; color:#333;">
+                            <i class="fa-solid fa-car-side fa-3x"></i>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-title">
+                                <span>${categoryName} #${i}</span>
+                                <a href="#" class="ig-link"><i class="fa-brands fa-instagram"></i></a>
+                            </div>
+                            <div class="owner-info">Owner: Placeholder Name</div>
+                            <button class="vote-btn" onclick="alert('Vote cast for ${categoryName} #${i}!')">VOTE FOR CAR</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Run generators
+        createPlaceholders('combustion', 'Combustion');
+        createPlaceholders('ev', 'Electric');
+        createPlaceholders('moto', 'Moto');
+        createPlaceholders('heavy', 'Heavy');
+    </script>
+</body>
+</html>
