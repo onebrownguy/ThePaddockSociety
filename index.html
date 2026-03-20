@@ -828,6 +828,181 @@
     @media (max-width: 600px) {
       .footer-inner { flex-direction: column; text-align: center; }
     }
+
+    /* ── NOISE TEXTURE ───────────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.35;
+    }
+
+    /* ── SCROLL REVEAL ───────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.75s ease, transform 0.75s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── GOLD DIVIDER ────────────────────────────────────── */
+    .gold-rule {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 24px;
+      opacity: 0.25;
+    }
+    .gold-rule::before, .gold-rule::after {
+      content: ''; flex: 1;
+      height: 1px;
+      background: var(--gold);
+    }
+    .gold-rule i { color: var(--gold); font-size: 8px; }
+
+    /* ── NEST FEST SECTION ───────────────────────────────── */
+    .nestfest-wrap {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 80px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .nestfest-wrap::before {
+      content: 'NEST FEST';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: var(--font-serif);
+      font-size: clamp(4rem, 18vw, 12rem);
+      font-weight: 300;
+      color: rgba(201,168,76,0.04);
+      white-space: nowrap;
+      pointer-events: none;
+      letter-spacing: 10px;
+    }
+    .nestfest-inner {
+      max-width: 780px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+    .nestfest-quote {
+      font-family: var(--font-serif);
+      font-size: clamp(1.4rem, 4.5vw, 2.2rem);
+      font-weight: 300;
+      font-style: italic;
+      line-height: 1.45;
+      color: var(--text);
+      border-left: 2px solid var(--gold);
+      padding-left: 28px;
+      margin: 36px 0;
+    }
+    .nestfest-body {
+      font-size: 15px;
+      line-height: 1.9;
+      color: var(--text-muted);
+    }
+    .nestfest-body strong { color: var(--text); font-weight: 500; }
+    .nestfest-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(201,168,76,0.07);
+      border: 1px solid rgba(201,168,76,0.2);
+      color: var(--gold);
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-top: 32px;
+    }
+
+    /* ── PETROL LOUNGE SECTION ───────────────────────────── */
+    .petrol-wrap {
+      padding: 100px 24px;
+    }
+    .petrol-inner {
+      max-width: 780px;
+      margin: 0 auto;
+    }
+    .petrol-header {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+    .petrol-logo-box {
+      background: #1a2035;
+      border: 1px solid var(--border);
+      padding: 20px 32px;
+      flex-shrink: 0;
+      font-family: var(--font-serif);
+      font-size: 1.2rem;
+      letter-spacing: 4px;
+      color: #fff;
+      text-transform: uppercase;
+    }
+    .petrol-intro {
+      font-size: 15px;
+      line-height: 1.85;
+      color: var(--text-muted);
+      max-width: 480px;
+    }
+    .petrol-services {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-bottom: 36px;
+    }
+    @media (min-width: 600px) {
+      .petrol-services { grid-template-columns: repeat(2, 1fr); }
+    }
+    .petrol-service {
+      background: var(--surface);
+      padding: 24px;
+    }
+    .petrol-service-icon {
+      color: var(--gold);
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+    }
+    .petrol-service-title {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      font-weight: 400;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    .petrol-service-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+    .petrol-ctas {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .petrol-loc {
+      font-size: 13px;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+    }
+    .petrol-loc i { color: var(--gold); margin-right: 6px; }
   </style>
 </head>
 <body>
@@ -939,6 +1114,26 @@
   </div>
 </div>
 
+<!-- ── NEST FEST ──────────────────────────────────────────── -->
+<div class="nestfest-wrap">
+  <div class="nestfest-inner">
+    <div class="section-eyebrow reveal">Origin Story</div>
+    <h2 class="section-title reveal">From a pitch stage<br>to <em>the grid.</em></h2>
+    <blockquote class="nestfest-quote reveal">
+      "What if a car meet could feel like a championship — where the community picks the winner, and every build gets its moment on the big screen?"
+    </blockquote>
+    <p class="nestfest-body reveal">
+      In November 2025, Eduardo and Jose took the stage at <strong>NEST FEST</strong> — Austin Community College's student startup showcase — and pitched The Paddock Society to a room full of investors, entrepreneurs, and fellow students. Their concept: a premium, ticketed automotive event series built around community voting, live broadcast technology, and sponsor integration that actually feels native to car culture.
+      <br><br>
+      The pitch earned them recognition among ACC's most promising student ventures, and lit the spark that became tonight's event. What you're experiencing right now is that idea, fully realized.
+    </p>
+    <div class="nestfest-badge reveal">
+      <i class="fas fa-trophy"></i>
+      NEST FEST 2025 — ACC Student Startup Showcase
+    </div>
+  </div>
+</div>
+
 <div class="full-divider"></div>
 
 <!-- ── FOUNDERS ───────────────────────────────────────────── -->
@@ -1007,6 +1202,54 @@
   </div>
 </div>
 
+<!-- ── PETROL LOUNGE ──────────────────────────────────────── -->
+<div class="petrol-wrap">
+  <div class="petrol-inner">
+    <div class="section-eyebrow reveal">Hosted By</div>
+    <h2 class="section-title reveal">Petrol<br><em>Lounge.</em></h2>
+    <div class="petrol-header reveal">
+      <div class="petrol-logo-box">Petrol Lounge</div>
+      <p class="petrol-intro">
+        Austin's premier automotive asset management company — and the venue that made tonight possible.
+        Founded in 2014, Petrol Lounge has spent a decade building a home for serious car culture in North Austin.
+      </p>
+    </div>
+    <div class="petrol-services reveal">
+      <div class="petrol-service">
+        <div class="petrol-service-icon"><i class="fas fa-warehouse"></i></div>
+        <div class="petrol-service-title">Secure Vehicle Storage</div>
+        <p class="petrol-service-desc">Climate-controlled, 24/7 access, weekly battery and tire service. Your car cared for like your own garage — only better.</p>
+      </div>
+      <div class="petrol-service">
+        <div class="petrol-service-icon"><i class="fas fa-screwdriver-wrench"></i></div>
+        <div class="petrol-service-title">Vehicle Concierge</div>
+        <p class="petrol-service-desc">Inspections, registrations, detailing, ceramic coating, transportation — full-service care at the facility or at your home.</p>
+      </div>
+      <div class="petrol-service">
+        <div class="petrol-service-icon"><i class="fas fa-tag"></i></div>
+        <div class="petrol-service-title">Vehicle Sales</div>
+        <p class="petrol-service-desc">Private sales for discerning owners and buyers. Official local partner for Bring a Trailer auctions.</p>
+      </div>
+      <div class="petrol-service">
+        <div class="petrol-service-icon"><i class="fas fa-calendar-star"></i></div>
+        <div class="petrol-service-title">Event Space</div>
+        <p class="petrol-service-desc">Unique indoor and outdoor venue for private and public motorsports events. Tonight is just one example of what this space makes possible.</p>
+      </div>
+    </div>
+    <div class="petrol-ctas reveal">
+      <a href="https://petrollounge.com" target="_blank" rel="noopener" class="btn-primary">
+        <i class="fas fa-arrow-up-right-from-square"></i> Visit Petrol Lounge
+      </a>
+      <a href="https://www.instagram.com/petrol_lounge" target="_blank" rel="noopener" class="btn-secondary">
+        <i class="fab fa-instagram"></i> @petrol_lounge
+      </a>
+      <span class="petrol-loc"><i class="fas fa-location-dot"></i>2631 Kramer Lane · Austin, TX 78758</span>
+    </div>
+  </div>
+</div>
+
+<div class="full-divider"></div>
+
 <!-- ── EVENT SPOTLIGHT ────────────────────────────────────── -->
 <div id="event">
   <div class="section-wrap">
@@ -1024,7 +1267,7 @@
           <div class="event-title">Paddock Premiere</div>
           <div class="event-meta">
             <div class="event-meta-item"><i class="fas fa-location-dot"></i>Petrol Lounge · 2631 Kramer Ln, Austin TX</div>
-            <div class="event-meta-item"><i class="fas fa-clock"></i>Doors 8:30 AM</div>
+            <div class="event-meta-item"><i class="fas fa-clock"></i>9:00 AM – 11:00 AM CDT</div>
           </div>
         </div>
         <div class="event-date-block">
@@ -1122,6 +1365,24 @@
     <div class="footer-copy">Austin, TX · Est. 2025</div>
   </div>
 </footer>
+
+<script>
+  // ── SCROLL REVEAL ─────────────────────────────────────────
+  const revealEls = document.querySelectorAll('.reveal');
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  revealEls.forEach((el, i) => {
+    el.style.transitionDelay = `${(i % 4) * 0.08}s`;
+    revealObserver.observe(el);
+  });
+</script>
 
 </body>
 </html>
