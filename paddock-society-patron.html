@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Paddock Premiere — The Paddock Society</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Outfit:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6.4.0 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* ── Design Tokens ───────────────────────── */
+    :root {
+      --gold:        #c9a84c;
+      --gold-light:  #e8c97a;
+      --black:       #080808;
+      --surface:     #101010;
+      --text:        #f0ece4;
+
+      --n-950: #0a0a0a;
+      --n-900: #171717;
+      --n-700: #404040;
+      --n-500: #737373;
+      --n-400: #a3a3a3;
+
+      --red:       #ef4444;
+      --red-bg:    rgba(69, 10, 10, 0.2);
+      --red-border: rgba(239, 68, 68, 0.3);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: var(--n-950);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem;
+      overflow-x: hidden;
+    }
+
+    /* Background glow */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 10%, rgba(180, 150, 50, 0.15), transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 28rem; /* 448px — Tailwind max-w-md */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Header ─────────────────────────────── */
+    .header {
+      width: 100%;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .header-label {
+      display: inline-block;
+      border-bottom: 1px solid rgba(201, 168, 76, 0.5);
+      padding-bottom: 0.25rem;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.4em;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    .header-title {
+      font-size: 2.25rem;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      text-transform: uppercase;
+      line-height: 1;
+      color: var(--text);
+    }
+
+    /* ── 3D Viewer ──────────────────────────── */
+    .viewer-wrap {
+      width: 100%;
+      background: rgba(23, 23, 23, 0.3);
+      border-radius: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .viewer-badge {
+      position: absolute;
+      top: 1rem;
+      left: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      z-index: 2;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: blink 2s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+
+    .viewer-badge-text {
+      font-size: 10px;
+      font-family: monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--n-400);
+      font-weight: 700;
+    }
+
+    #car-canvas {
+      width: 100%;
+      height: 256px;
+      display: block;
+      cursor: grab;
+    }
+    #car-canvas:active { cursor: grabbing; }
+
+    .viewer-footer {
+      padding: 1rem;
+      text-align: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .viewer-footer p {
+      font-size: 10px;
+      color: var(--n-500);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      font-weight: 700;
+      font-style: italic;
+    }
+
+    /* ── Roster Intelligence ────────────────── */
+    .roster {
+      width: 100%;
+      margin-bottom: 2rem;
+    }
+
+    .roster-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 1rem;
+      padding: 0 0.5rem;
+    }
+
+    .roster-title {
+      font-size: 0.875rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.05em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .roster-title i { color: var(--gold); }
+
+    .dots { display: flex; gap: 0.25rem; }
+
+    .dot {
+      height: 4px;
+      width: 24px;
+      border-radius: 9999px;
+      background: var(--n-700);
+      border: none;
+      cursor: pointer;
+      transition: background 0.25s;
+      padding: 0;
+    }
+    .dot.active { background: var(--gold); }
+
+    .roster-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+    }
+
+    .roster-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+    }
+
+    .car-model {
+      font-size: 1.25rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.05em;
+    }
+
+    .car-owner {
+      color: var(--gold);
+      font-size: 0.75rem;
+      font-family: monospace;
+      font-weight: 700;
+    }
+
+    .tier-badge {
+      background: var(--gold);
+      color: #000;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-weight: 900;
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.75rem;
+      border-radius: 1rem;
+    }
+
+    .stat-item i { color: var(--gold); flex-shrink: 0; }
+
+    .stat-label {
+      display: block;
+      font-size: 8px;
+      color: var(--n-500);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .stat-value {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 700;
+      font-family: monospace;
+    }
+
+    /* ── Safety ─────────────────────────────── */
+    .safety-card {
+      width: 100%;
+      background: var(--red-bg);
+      border: 1px solid var(--red-border);
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .safety-card > i {
+      color: var(--red);
+      font-size: 2.5rem;
+      flex-shrink: 0;
+    }
+
+    .safety-title {
+      font-size: 0.875rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.025em;
+      color: var(--red);
+    }
+
+    .safety-text {
+      font-size: 10px;
+      color: var(--n-400);
+      font-weight: 500;
+      line-height: 1.4;
+      margin-top: 0.25rem;
+    }
+
+    /* ── QR Card ────────────────────────────── */
+    .qr-card {
+      width: 100%;
+      background: #fff;
+      border-radius: 2.5rem;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .qr-box {
+      width: 12rem;
+      height: 12rem;
+      background: #f5f5f5;
+      border-radius: 1rem;
+      border: 2px dashed #d4d4d4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    .qr-box i { font-size: 6rem; color: #171717; }
+
+    .qr-label {
+      color: #171717;
+      font-weight: 900;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .qr-location {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      color: #737373;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .qr-location i { color: var(--gold); }
+
+    /* ── Partners ───────────────────────────── */
+    .partners {
+      width: 100%;
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .partners-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--n-500);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 1rem;
+    }
+
+    .partners-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      opacity: 0.7;
+    }
+
+    .partner { font-size: 10px; font-family: monospace; }
+
+    /* ── Footer ─────────────────────────────── */
+    .site-footer {
+      padding-bottom: 2rem;
+      opacity: 0.3;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-label">The Paddock Society</div>
+      <h1 class="header-title">Paddock<br>Premiere</h1>
+    </header>
+
+    <!-- 3D Viewer -->
+    <div class="viewer-wrap">
+      <div class="viewer-badge">
+        <div class="live-dot"></div>
+        <span class="viewer-badge-text">Live Asset Viewer</span>
+      </div>
+      <canvas id="car-canvas"></canvas>
+      <div class="viewer-footer">
+        <p>Rotate to Inspect Silhouette</p>
+      </div>
+    </div>
+
+    <!-- Roster Intelligence -->
+    <section class="roster">
+      <div class="roster-header">
+        <h2 class="roster-title">
+          <i class="fas fa-gauge"></i>
+          Roster Intelligence
+        </h2>
+        <div class="dots">
+          <button class="dot active" aria-label="Car 1" onclick="setActiveCar(0)"></button>
+          <button class="dot" aria-label="Car 2" onclick="setActiveCar(1)"></button>
+          <button class="dot" aria-label="Car 3" onclick="setActiveCar(2)"></button>
+        </div>
+      </div>
+
+      <div class="roster-card">
+        <div class="roster-top">
+          <div>
+            <div class="car-model" id="car-model">Ferrari 296 GTS</div>
+            <div class="car-owner" id="car-owner">@mylife_atx</div>
+          </div>
+          <div class="tier-badge">Tier 1</div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <i class="fas fa-bolt"></i>
+            <div>
+              <span class="stat-label">Power</span>
+              <span class="stat-value" id="stat-hp">819 HP</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-stopwatch"></i>
+            <div>
+              <span class="stat-label">0–60 MPH</span>
+              <span class="stat-value" id="stat-060">2.9s</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-wind"></i>
+            <div>
+              <span class="stat-label">Top Speed</span>
+              <span class="stat-value" id="stat-top">205 MPH</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-wand-magic-sparkles"></i>
+            <div>
+              <span class="stat-label">Engine</span>
+              <span class="stat-value" id="stat-engine">V6 Hybrid</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Safety Protocol -->
+    <div class="safety-card">
+      <i class="fas fa-triangle-exclamation"></i>
+      <div>
+        <div class="safety-title">Zero Tolerance Policy</div>
+        <p class="safety-text">NO REVVING. NO BURNOUTS. Violation results in immediate removal and permanent blacklist.</p>
+      </div>
+    </div>
+
+    <!-- QR & Location -->
+    <div class="qr-card">
+      <div class="qr-box">
+        <i class="fas fa-qrcode"></i>
+      </div>
+      <p class="qr-label">Scan for Live Guide</p>
+      <div class="qr-location">
+        <i class="fas fa-location-dot"></i>
+        PETROL LOUNGE &bull; MARCH 22 &bull; 08:30 AM
+      </div>
+    </div>
+
+    <!-- Ticket CTA -->
+    <div style="padding: 0 20px 8px; text-align: center;">
+      <a
+        href="https://posh.vip/e/the-paddock-premiere?utm_source=ig&utm_medium=social&utm_content=link_in_bio"
+        target="_blank"
+        rel="noopener"
+        style="display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:#0a0800;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.06em;padding:13px 28px;border-radius:10px;text-decoration:none;"
+      >
+        <i class="fas fa-ticket"></i>
+        Get Tickets on Posh
+      </a>
+    </div>
+
+    <!-- Partners -->
+    <div class="partners">
+      <p class="partners-label">Official Partners</p>
+      <div class="partners-list">
+        <span class="partner">@full.sendcoffeeco</span>
+        <span class="partner">@cleanjuiceroundrock</span>
+        <span class="partner">@wrapmyride.ai</span>
+        <span class="partner">@adyn761</span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <a
+        href="https://www.instagram.com/the_paddocksociety/"
+        target="_blank"
+        rel="noopener"
+        style="color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:8px;"
+      >
+        <i class="fab fa-instagram"></i>
+        @the_paddocksociety
+      </a>
+    </footer>
+
+  </div>
+
+  <!-- Three.js r128 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <script>
+    // ── Car Data ─────────────────────────────────────────────────────────────
+    const CARS = [
+      { model: 'Ferrari 296 GTS',  owner: '@mylife_atx', hp: '819 HP',       zero: '2.9s', engine: 'V6 Hybrid',    top: '205 MPH' },
+      { model: 'Porsche GT3 RS',   owner: '@redline.9k',  hp: '518 HP',       zero: '3.0s', engine: '4.0L Boxer-6', top: '184 MPH' },
+      { model: 'Toyota Supra MKV', owner: '@dotcomjoe',   hp: '450 HP (Est)', zero: '3.8s', engine: 'B58 Inline-6', top: '155 MPH' },
+    ];
+
+    let activeCar = 0;
+
+    function setActiveCar(index) {
+      activeCar = index;
+      const c = CARS[index];
+      document.getElementById('car-model').textContent   = c.model;
+      document.getElementById('car-owner').textContent   = c.owner;
+      document.getElementById('stat-hp').textContent     = c.hp;
+      document.getElementById('stat-060').textContent    = c.zero;
+      document.getElementById('stat-top').textContent    = c.top;
+      document.getElementById('stat-engine').textContent = c.engine;
+      document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === index));
+    }
+
+    // ── Three.js Viewer ───────────────────────────────────────────────────────
+    (function initViewer() {
+      const canvas = document.getElementById('car-canvas');
+      const THREE  = window.THREE;
+
+      // Size canvas to its CSS dimensions
+      const W = canvas.offsetWidth;
+      const H = 256;
+
+      const scene    = new THREE.Scene();
+      const camera   = new THREE.PerspectiveCamera(75, W / H, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      renderer.setSize(W, H);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      // Car geometry
+      const carGroup = new THREE.Group();
+      const bodyMat  = new THREE.MeshPhongMaterial({ color: 0x111111, shininess: 100 });
+      const wheelMat = new THREE.MeshPhongMaterial({ color: 0x333333 });
+
+      // Body
+      carGroup.add(Object.assign(new THREE.Mesh(new THREE.BoxGeometry(4, 0.5, 2), bodyMat)));
+
+      // Cockpit
+      const roof = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.4, 1.4), bodyMat);
+      roof.position.set(-0.2, 0.4, 0);
+      carGroup.add(roof);
+
+      // Spoiler
+      const wing = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.1, 2), bodyMat);
+      wing.position.set(1.8, 0.5, 0);
+      carGroup.add(wing);
+
+      // Wheels
+      const wheelGeom = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 32);
+      [[1.2, -0.2, 1], [1.2, -0.2, -1], [-1.2, -0.2, 1], [-1.2, -0.2, -1]].forEach(([x, y, z]) => {
+        const w = new THREE.Mesh(wheelGeom, wheelMat);
+        w.rotation.x = Math.PI / 2;
+        w.position.set(x, y, z);
+        carGroup.add(w);
+      });
+
+      scene.add(carGroup);
+
+      // Lighting
+      scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+      const goldLight = new THREE.PointLight(0xb49632, 2);
+      goldLight.position.set(5, 5, 5);
+      scene.add(goldLight);
+
+      camera.position.set(0, 1, 6);
+
+      // Input tracking (mouse + touch)
+      let mouseX = 0;
+      window.addEventListener('mousemove', e => {
+        mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+      });
+      window.addEventListener('touchmove', e => {
+        mouseX = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
+      }, { passive: true });
+
+      // Render loop
+      (function animate() {
+        requestAnimationFrame(animate);
+        carGroup.rotation.y += (mouseX * 2 - carGroup.rotation.y) * 0.05;
+        carGroup.rotation.x  = Math.sin(Date.now() * 0.001) * 0.1;
+        renderer.render(scene, camera);
+      })();
+
+      // Handle window resize
+      window.addEventListener('resize', () => {
+        const w = canvas.offsetWidth;
+        camera.aspect = w / H;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, H);
+      });
+    })();
+  </script>
+</body>
+</html>

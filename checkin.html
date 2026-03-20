@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Staff Check-In — Paddock Premiere</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold:        #C9A84C;
+      --gold-light:  #E8C97A;
+      --gold-dim:    #7A6228;
+      --black:       #080808;
+      --surface:     #101010;
+      --surface-2:   #161616;
+      --surface-3:   #222222;
+      --border:      #2A2A2A;
+      --text:        #F0ECE4;
+      --text-muted:  #777;
+      --green:       #22C55E;
+      --green-bg:    #0C1F11;
+      --green-border:#1A3D22;
+      --red:         #F87171;
+      --red-bg:      #1F0A0A;
+      --red-border:  #3D1515;
+      --font-serif:  'Cormorant Garamond', Georgia, serif;
+      --font-sans:   'Outfit', system-ui, sans-serif;
+      --radius:      12px;
+    }
+
+    html {
+      background: var(--black);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      min-height: 100dvh;
+      max-width: 720px;
+      margin: 0 auto;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+
+    /* ── STICKY HEADER ─────────────────────────────── */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--black);
+      padding: 16px 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .header-left {}
+
+    .header-eyebrow {
+      font-family: var(--font-sans);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 3px;
+    }
+
+    .header-title {
+      font-family: var(--font-serif);
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .header-counter {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .counter-num {
+      font-family: var(--font-serif);
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .counter-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .progress-bar {
+      height: 3px;
+      background: var(--surface-3);
+      margin: 0 -16px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+      transition: width 0.5s cubic-bezier(.4,0,.2,1);
+      min-width: 0;
+    }
+
+    /* ── SEARCH ─────────────────────────────────────── */
+    .search-section {
+      padding: 14px 16px 0;
+    }
+
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      padding: 11px 40px 11px 40px;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+
+    .search-input:focus { border-color: var(--gold-dim); }
+    .search-input::placeholder { color: var(--text-muted); }
+
+    .search-icon {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      display: flex;
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--surface-3);
+      border: none;
+      color: var(--text-muted);
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 11px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .search-clear.visible { display: flex; }
+
+    /* ── TABS ───────────────────────────────────────── */
+    .tabs-section {
+      padding: 12px 16px 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tabs-section::-webkit-scrollbar { display: none; }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      padding-bottom: 12px;
+      width: max-content;
+    }
+
+    .tab {
+      padding: 7px 15px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: all 0.18s;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .tab:hover { border-color: var(--gold-dim); color: var(--text); }
+
+    .tab.active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: var(--black);
+      font-weight: 700;
+    }
+
+    /* ── META ROW ───────────────────────────────────── */
+    .meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px 4px;
+    }
+
+    .results-label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .arrived-count-label {
+      font-size: 12px;
+      color: var(--green);
+      font-weight: 500;
+    }
+
+    /* ── CARDS GRID ─────────────────────────────────── */
+    .cards-grid {
+      padding: 0 12px 12px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    @media (min-width: 540px) {
+      .cards-grid { grid-template-columns: 1fr 1fr; padding: 0 16px 12px; gap: 10px; }
+    }
+
+    /* ── CARD ───────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 13px 14px 12px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.25s, background 0.25s;
+    }
+
+    .card::after {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--border);
+      transition: background 0.25s;
+    }
+
+    .card.arrived {
+      background: var(--green-bg);
+      border-color: var(--green-border);
+    }
+
+    .card.arrived::after {
+      background: var(--green);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 7px;
+    }
+
+    .cat-badge {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .badge-instagram { background: rgba(201,168,76,0.13); color: #D4A84B; }
+    .badge-jdm       { background: rgba(239,68,68,0.12);  color: #FC8181; }
+    .badge-euro      { background: rgba(96,165,250,0.12); color: #60A5FA; }
+    .badge-domestic  { background: rgba(156,163,175,0.1); color: #9CA3AF; }
+    .badge-moto      { background: rgba(167,139,250,0.12);color: #A78BFA; }
+    .badge-classic   { background: rgba(52,211,153,0.12); color: #34D399; }
+
+    .arrived-pill {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: 0.06em;
+    }
+
+    .arrived-pill svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+    .card-car {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+      margin-bottom: 3px;
+    }
+
+    .card-handle {
+      font-size: 13px;
+      color: var(--gold);
+      font-weight: 400;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 11px;
+      gap: 8px;
+    }
+
+    .card-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      flex: 1;
+    }
+
+    .btn-checkin {
+      background: var(--gold);
+      color: #0a0800;
+      border: none;
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 8px 16px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
+    }
+
+    .btn-checkin:active { transform: scale(0.95); opacity: 0.9; }
+
+    .btn-undo {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 6px 13px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.18s;
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-undo:hover { border-color: #555; color: var(--text); }
+
+    /* ── EMPTY STATE ────────────────────────────────── */
+    .empty-state {
+      grid-column: 1 / -1;
+      padding: 56px 20px;
+      text-align: center;
+    }
+
+    .empty-icon { font-size: 38px; margin-bottom: 14px; }
+    .empty-h { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .empty-p { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+
+    /* ── DIVIDER ────────────────────────────────────── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 8px 16px 0;
+    }
+
+    /* ── ADMIN SECTION ──────────────────────────────── */
+    .admin-section {
+      padding: 20px 16px 40px;
+    }
+
+    .admin-eyebrow {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .add-car-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .add-car-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .form-field {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      padding: 9px 12px;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+
+    .form-field:focus { border-color: var(--gold-dim); }
+    .form-field::placeholder { color: var(--text-muted); }
+    .form-field option { background: var(--surface-2); }
+
+    select.form-field { cursor: pointer; }
+
+    .btn-add {
+      width: 100%;
+      background: var(--surface-3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 11px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.18s;
+      margin-top: 4px;
+      letter-spacing: 0.03em;
+    }
+
+    .btn-add:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+    .btn-reset-all {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--red-border);
+      color: var(--red);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 11px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.18s;
+      letter-spacing: 0.03em;
+    }
+
+    .btn-reset-all:hover { background: var(--red-bg); }
+
+    /* ── MODAL (bottom-sheet on mobile) ─────────────── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 500;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s;
+      padding: 0;
+    }
+
+    .overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    @media (min-width: 480px) {
+      .overlay { align-items: center; padding: 20px; }
+    }
+
+    .modal {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 460px;
+      padding: 20px 20px 36px;
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+    }
+
+    @media (min-width: 480px) {
+      .modal {
+        border-radius: 16px;
+        padding: 26px 24px;
+        transform: translateY(16px) scale(0.97);
+        max-width: 380px;
+      }
+      .overlay.open .modal { transform: translateY(0) scale(1); }
+    }
+
+    .overlay.open .modal { transform: translateY(0); }
+
+    .modal-pill {
+      width: 38px; height: 4px;
+      background: var(--surface-3);
+      border-radius: 2px;
+      margin: 0 auto 18px;
+    }
+
+    @media (min-width: 480px) { .modal-pill { display: none; } }
+
+    .modal-icon { font-size: 30px; margin-bottom: 10px; }
+
+    .modal-title {
+      font-family: var(--font-sans);
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 7px;
+    }
+
+    .modal-body {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 20px;
+    }
+
+    .modal-body strong { color: var(--text); font-weight: 600; }
+
+    .modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn-modal-cancel {
+      background: var(--surface-3);
+      border: none;
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 500;
+      padding: 13px;
+      border-radius: 10px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-modal-confirm {
+      background: var(--gold);
+      border: none;
+      color: #0a0800;
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 700;
+      padding: 13px;
+      border-radius: 10px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-modal-confirm.danger {
+      background: #EF4444;
+      color: #fff;
+    }
+
+    /* ── TOAST ──────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 10px 22px;
+      border-radius: 100px;
+      white-space: nowrap;
+      z-index: 900;
+      pointer-events: none;
+      transition: transform 0.28s cubic-bezier(.4,0,.2,1), opacity 0.28s;
+      opacity: 0;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────── -->
+<header class="header">
+  <div class="header-row">
+    <div class="header-left">
+      <div class="header-eyebrow">The Paddock Society</div>
+      <div class="header-title">Staff Check-In</div>
+    </div>
+    <div class="header-counter">
+      <div class="counter-num" id="counterNum">0 / 38</div>
+      <div class="counter-label">Arrived</div>
+    </div>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+</header>
+
+<!-- ── SEARCH ──────────────────────────────────────── -->
+<section class="search-section">
+  <div class="search-wrap">
+    <span class="search-icon">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </span>
+    <input
+      id="searchInput"
+      class="search-input"
+      type="search"
+      placeholder="Search car or @handle…"
+      autocomplete="off"
+      autocorrect="off"
+      spellcheck="false"
+    >
+    <button class="search-clear" id="searchClear" aria-label="Clear search">✕</button>
+  </div>
+</section>
+
+<!-- ── CATEGORY TABS ───────────────────────────────── -->
+<div class="tabs-section">
+  <div class="tabs" id="tabsRow">
+    <button class="tab active" data-cat="all">All</button>
+    <button class="tab" data-cat="instagram">Confirmed</button>
+    <button class="tab" data-cat="jdm">JDM</button>
+    <button class="tab" data-cat="euro">Euro</button>
+    <button class="tab" data-cat="domestic">Domestic</button>
+    <button class="tab" data-cat="moto">Moto</button>
+    <button class="tab" data-cat="classic">Classic</button>
+  </div>
+</div>
+
+<!-- ── META ROW ────────────────────────────────────── -->
+<div class="meta-row">
+  <span class="results-label" id="resultsLabel"></span>
+  <span class="arrived-count-label" id="arrivedLabel"></span>
+</div>
+
+<!-- ── CARDS ───────────────────────────────────────── -->
+<main class="cards-grid" id="cardsGrid"></main>
+
+<!-- ── DIVIDER + ADMIN ─────────────────────────────── -->
+<div class="divider"></div>
+<section class="admin-section">
+  <div class="admin-eyebrow">Staff Admin</div>
+
+  <div class="add-car-panel">
+    <div class="add-car-title">➕ Add Walk-In Vehicle</div>
+    <div class="form-row">
+      <input id="addCarInput"    class="form-field" type="text" placeholder="Car make &amp; model" autocomplete="off">
+      <input id="addHandleInput" class="form-field" type="text" placeholder="@handle" autocomplete="off">
+    </div>
+    <select id="addCatSelect" class="form-field" style="margin-bottom:8px">
+      <option value="instagram">Instagram Confirmed</option>
+      <option value="jdm">JDM / Import</option>
+      <option value="euro">Euro</option>
+      <option value="domestic">Domestic</option>
+      <option value="moto">Moto</option>
+      <option value="classic">Classic / Other</option>
+    </select>
+    <button class="btn-add" id="addCarBtn">Add Vehicle to List</button>
+  </div>
+
+  <button class="btn-reset-all" id="resetAllBtn">Reset All Check-Ins</button>
+</section>
+
+<!-- ── CONFIRM MODAL ───────────────────────────────── -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-pill"></div>
+    <div class="modal-icon" id="modalIcon">✅</div>
+    <div class="modal-title" id="modalTitle">Confirm</div>
+    <div class="modal-body"  id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel"  id="modalCancel">Cancel</button>
+      <button class="btn-modal-confirm" id="modalConfirm">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ────────────────────────────────────────── -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA — 38 confirmed vehicles
+// ═══════════════════════════════════════════════════════
+const BASE_CARS = [
+  // ── Instagram Confirmed ──────────────────────────
+  { id:  1, car: "Chevrolet Corvette",           handle: "@sounddarde",          category: "instagram" },
+  { id:  2, car: "BMW M4",                       handle: "@kevindegroot7777",    category: "instagram" },
+  { id:  3, car: "Ferrari 458 Italia",           handle: "@chrischavarro",       category: "instagram" },
+  { id:  4, car: "BMW M4",                       handle: "@aaronjoelgeorge",     category: "instagram" },
+  { id:  5, car: "Mercedes-Benz GLC63 AMG",      handle: "@gyat.amg",            category: "instagram" },
+  { id:  6, car: "Nissan GT-R R35 (Purple)",     handle: "@gcg_habits",          category: "instagram" },
+  { id:  7, car: "Ford Mustang S650",            handle: "@mako_s650",           category: "instagram" },
+  { id:  8, car: "Ford Mustang S650",            handle: "@thatblackwidows650",  category: "instagram" },
+  { id:  9, car: "Honda Civic FK8 Type R LE",   handle: "@type_raichu",         category: "instagram" },
+  { id: 10, car: "Mercedes-Benz AMG",            handle: "@dgb1031",             category: "instagram" },
+  { id: 11, car: "Chevrolet Camaro (Modded)",    handle: "@ss.pao.66",           category: "instagram" },
+  { id: 12, car: "AMS Alpha GT-R R35",           handle: "@instabraad",          category: "instagram" },
+  // ── JDM / Import ────────────────────────────────
+  { id: 13, car: "Nissan GT-R R35",              handle: "@r35.aus",             category: "jdm" },
+  { id: 14, car: "Toyota Supra MK4",             handle: "@supra_atx",           category: "jdm" },
+  { id: 15, car: "Honda S2000",                  handle: "@s2k_tx",              category: "jdm" },
+  { id: 16, car: "Mazda RX-7 FD",                handle: "@fd3s_atx",            category: "jdm" },
+  { id: 17, car: "Mitsubishi Evo IX",            handle: "@evo9_atx",            category: "jdm" },
+  { id: 18, car: "Subaru WRX STI",               handle: "@sti_austin",          category: "jdm" },
+  { id: 19, car: "Honda Civic Type R FK8",       handle: "@fk8_atx",             category: "jdm" },
+  // ── Euro ────────────────────────────────────────
+  { id: 20, car: "BMW M3 E46",                   handle: "@e46m3_atx",           category: "euro" },
+  { id: 21, car: "Porsche 911 GT3",              handle: "@gt3_atx",             category: "euro" },
+  { id: 22, car: "Mercedes-AMG C63",             handle: "@amgc63_tx",           category: "euro" },
+  { id: 23, car: "Audi RS3",                     handle: "@rs3_austin",          category: "euro" },
+  { id: 24, car: "VW Golf R",                    handle: "@golfr_atx",           category: "euro" },
+  // ── Domestic ────────────────────────────────────
+  { id: 25, car: "Ford Focus RS",                handle: "@naegerter_rs",        category: "domestic" },
+  { id: 26, car: "Dodge Challenger SRT Hellcat", handle: "@bagd717",             category: "domestic" },
+  { id: 27, car: "Dodge Charger R/T",            handle: "@garza_5.7",           category: "domestic" },
+  { id: 28, car: "Chevrolet Corvette C6",        handle: "@fulloppc5",           category: "domestic" },
+  { id: 29, car: "Chevrolet Camaro 4th Gen",     handle: "@arii_soss",           category: "domestic" },
+  { id: 30, car: "Chrysler 300 SRT",             handle: "@james.king300",       category: "domestic" },
+  // ── Moto ────────────────────────────────────────
+  { id: 31, car: "BMW S1000RR",                  handle: "@s1kjoe",              category: "moto" },
+  { id: 32, car: "Kawasaki ZX6R",                handle: "@meezzy.6r",           category: "moto" },
+  { id: 33, car: "Honda CBR",                    handle: "@cbr_1krrr",           category: "moto" },
+  { id: 34, car: "Legion Bike Club",             handle: "@legionbikeandcarclub", category: "moto" },
+  // ── Classic / Other ─────────────────────────────
+  { id: 35, car: "VW Beetle '66",               handle: "@la_pulga_08",         category: "classic" },
+  { id: 36, car: "VW Beetle (Red)",              handle: "@eli_mtzvolks",        category: "classic" },
+  { id: 37, car: "Custom Truck",                 handle: "@maxxribble",          category: "classic" },
+  { id: 38, car: "Lightning McQueen ⚡",         handle: "@kaitlyn_france95",    category: "classic" },
+];
+
+const CAT_LABELS = {
+  instagram: "Confirmed",
+  jdm:       "JDM",
+  euro:      "Euro",
+  domestic:  "Domestic",
+  moto:      "Moto",
+  classic:   "Classic",
+};
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+const LS_CHECKINS = "paddock_checkins_v1";
+const LS_CUSTOM   = "paddock_custom_cars_v1";
+
+let activeTab    = "all";
+let searchQuery  = "";
+let pendingFn    = null;   // confirmed action callback
+
+// ═══════════════════════════════════════════════════════
+// LOCALSTORAGE
+// ═══════════════════════════════════════════════════════
+function getCheckins() {
+  try { return JSON.parse(localStorage.getItem(LS_CHECKINS) || "{}"); }
+  catch { return {}; }
+}
+
+function setCheckin(id, on) {
+  const c = getCheckins();
+  if (on) {
+    c[id] = {
+      on: true,
+      time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }),
+    };
+  } else {
+    delete c[id];
+  }
+  localStorage.setItem(LS_CHECKINS, JSON.stringify(c));
+}
+
+function clearCheckins() {
+  localStorage.removeItem(LS_CHECKINS);
+}
+
+function getCustomCars() {
+  try { return JSON.parse(localStorage.getItem(LS_CUSTOM) || "[]"); }
+  catch { return []; }
+}
+
+function addCustomCar(entry) {
+  const list = getCustomCars();
+  entry.id = Date.now();          // unique numeric-ish ID
+  list.push(entry);
+  localStorage.setItem(LS_CUSTOM, JSON.stringify(list));
+  return entry;
+}
+
+function allCars() {
+  return [...BASE_CARS, ...getCustomCars()];
+}
+
+// ═══════════════════════════════════════════════════════
+// FILTER
+// ═══════════════════════════════════════════════════════
+function filteredCars() {
+  const q = searchQuery.toLowerCase();
+  return allCars().filter(c => {
+    const matchTab = activeTab === "all" || c.category === activeTab;
+    const matchSearch = !q ||
+      c.car.toLowerCase().includes(q) ||
+      c.handle.toLowerCase().includes(q);
+    return matchTab && matchSearch;
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════
+function renderAll() {
+  renderHeader();
+  renderCards();
+}
+
+function renderHeader() {
+  const checkins = getCheckins();
+  const cars     = allCars();
+  const total    = cars.length;
+  const arrived  = Object.values(checkins).filter(v => v.on).length;
+  const pct      = total ? (arrived / total) * 100 : 0;
+
+  document.getElementById("counterNum").textContent    = `${arrived} / ${total}`;
+  document.getElementById("progressFill").style.width  = `${pct}%`;
+
+  // meta row
+  const visible = filteredCars();
+  document.getElementById("resultsLabel").textContent =
+    visible.length ? `${visible.length} vehicle${visible.length !== 1 ? "s" : ""}` : "";
+  document.getElementById("arrivedLabel").textContent =
+    arrived ? `${arrived} on grid` : "";
+}
+
+function renderCards() {
+  const grid     = document.getElementById("cardsGrid");
+  const checkins = getCheckins();
+  const visible  = filteredCars();
+
+  if (!visible.length) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-h">No vehicles found</div>
+        <div class="empty-p">Try a different search term or category.</div>
+      </div>`;
+    return;
+  }
+
+  // Sort: pending first, arrived last
+  const sorted = [...visible].sort((a, b) => {
+    const aOn = !!(checkins[a.id]?.on);
+    const bOn = !!(checkins[b.id]?.on);
+    return aOn - bOn;
+  });
+
+  grid.innerHTML = sorted.map(c => {
+    const ci      = checkins[c.id];
+    const arrived = !!(ci?.on);
+    const time    = ci?.time || "";
+    return `
+      <div class="card${arrived ? " arrived" : ""}" data-id="${c.id}">
+        <div class="card-header">
+          <span class="cat-badge badge-${esc(c.category)}">${esc(CAT_LABELS[c.category] || c.category)}</span>
+          ${arrived ? `
+            <span class="arrived-pill">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              ARRIVED
+            </span>` : ""}
+        </div>
+        <div class="card-car">${esc(c.car)}</div>
+        <div class="card-handle">${esc(c.handle)}</div>
+        <div class="card-footer">
+          ${arrived
+            ? `<span class="card-time">✓ ${esc(time)}</span>
+               <button class="btn-undo"    data-id="${c.id}" data-action="undo">Undo</button>`
+            : `<span></span>
+               <button class="btn-checkin" data-id="${c.id}" data-action="checkin">Mark Arrived</button>`
+          }
+        </div>
+      </div>`;
+  }).join("");
+}
+
+// ═══════════════════════════════════════════════════════
+// ACTIONS
+// ═══════════════════════════════════════════════════════
+function doCheckin(id) {
+  const c = allCars().find(v => String(v.id) === String(id));
+  if (!c) return;
+  showModal({
+    icon: "🏁",
+    title: "Mark as Arrived?",
+    body:  `Confirm <strong>${esc(c.car)}</strong> has pulled onto the grid.`,
+    confirmLabel: "Arrived ✓",
+    danger: false,
+    onConfirm() {
+      setCheckin(id, true);
+      renderAll();
+      toast(`✓ ${c.car} checked in`);
+    },
+  });
+}
+
+function doUndo(id) {
+  const c = allCars().find(v => String(v.id) === String(id));
+  if (!c) return;
+  showModal({
+    icon: "↩️",
+    title: "Undo Check-In?",
+    body:  `Remove arrived status for <strong>${esc(c.car)}</strong>?`,
+    confirmLabel: "Undo",
+    danger: false,
+    onConfirm() {
+      setCheckin(id, false);
+      renderAll();
+      toast(`Removed: ${c.car}`);
+    },
+  });
+}
+
+function doResetAll() {
+  const count = Object.values(getCheckins()).filter(v => v.on).length;
+  if (!count) { toast("No check-ins to reset"); return; }
+  showModal({
+    icon: "⚠️",
+    title: "Reset All Check-Ins?",
+    body:  `This will clear all <strong>${count}</strong> check-in${count !== 1 ? "s" : ""}. Cannot be undone.`,
+    confirmLabel: "Reset All",
+    danger: true,
+    onConfirm() {
+      clearCheckins();
+      renderAll();
+      toast("All check-ins cleared");
+    },
+  });
+}
+
+function doAddCar() {
+  const carVal    = document.getElementById("addCarInput").value.trim();
+  const handleVal = document.getElementById("addHandleInput").value.trim();
+  const catVal    = document.getElementById("addCatSelect").value;
+
+  if (!carVal) { toast("Enter a car name first"); return; }
+
+  const entry = addCustomCar({
+    car:      carVal,
+    handle:   handleVal || "—",
+    category: catVal,
+  });
+
+  document.getElementById("addCarInput").value    = "";
+  document.getElementById("addHandleInput").value = "";
+
+  renderAll();
+  toast(`Added: ${entry.car}`);
+}
+
+// ═══════════════════════════════════════════════════════
+// EVENTS — card grid (delegated)
+// ═══════════════════════════════════════════════════════
+document.getElementById("cardsGrid").addEventListener("click", e => {
+  const btn = e.target.closest("[data-action]");
+  if (!btn) return;
+  const { action, id } = btn.dataset;
+  if (action === "checkin") doCheckin(id);
+  if (action === "undo")    doUndo(id);
+});
+
+// ═══════════════════════════════════════════════════════
+// EVENTS — search
+// ═══════════════════════════════════════════════════════
+const searchInput = document.getElementById("searchInput");
+const searchClear = document.getElementById("searchClear");
+
+searchInput.addEventListener("input", () => {
+  searchQuery = searchInput.value.trim();
+  searchClear.classList.toggle("visible", searchQuery.length > 0);
+  renderAll();
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchQuery = "";
+  searchClear.classList.remove("visible");
+  searchInput.focus();
+  renderAll();
+});
+
+// ═══════════════════════════════════════════════════════
+// EVENTS — tabs
+// ═══════════════════════════════════════════════════════
+document.getElementById("tabsRow").addEventListener("click", e => {
+  const btn = e.target.closest("[data-cat]");
+  if (!btn) return;
+  activeTab = btn.dataset.cat;
+  document.querySelectorAll(".tab").forEach(t =>
+    t.classList.toggle("active", t.dataset.cat === activeTab)
+  );
+  renderAll();
+});
+
+// ═══════════════════════════════════════════════════════
+// EVENTS — admin
+// ═══════════════════════════════════════════════════════
+document.getElementById("addCarBtn").addEventListener("click", doAddCar);
+document.getElementById("resetAllBtn").addEventListener("click", doResetAll);
+
+// Enter key in add-car inputs
+["addCarInput","addHandleInput"].forEach(id =>
+  document.getElementById(id).addEventListener("keydown", e => {
+    if (e.key === "Enter") doAddCar();
+  })
+);
+
+// ═══════════════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════════════
+function showModal({ icon, title, body, confirmLabel, danger, onConfirm }) {
+  document.getElementById("modalIcon").textContent    = icon;
+  document.getElementById("modalTitle").textContent   = title;
+  document.getElementById("modalBody").innerHTML      = body;
+  const btn = document.getElementById("modalConfirm");
+  btn.textContent = confirmLabel || "Confirm";
+  btn.className   = "btn-modal-confirm" + (danger ? " danger" : "");
+  pendingFn = onConfirm;
+  document.getElementById("overlay").classList.add("open");
+}
+
+function closeModal() {
+  document.getElementById("overlay").classList.remove("open");
+  pendingFn = null;
+}
+
+document.getElementById("modalCancel").addEventListener("click", closeModal);
+document.getElementById("overlay").addEventListener("click", e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+document.getElementById("modalConfirm").addEventListener("click", () => {
+  if (pendingFn) pendingFn();
+  closeModal();
+});
+
+// Escape key closes modal
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeModal();
+});
+
+// ═══════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════
+let toastTimer = null;
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
+}
+
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+function esc(str) {
+  return String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+renderAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920">
+  <title>People's Choice — The Paddock Society</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,700;1,700&family=Outfit:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6.4.0 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* ── Design Tokens ───────────────────────── */
+    :root {
+      --gold:        #c9a84c;
+      --gold-light:  #e8c97a;
+      --black:       #080808;
+      --surface:     #101010;
+      --text:        #f0ece4;
+
+      --n-950: #0a0a0a;
+      --n-900: #171717;
+      --n-800: #262626;
+      --n-700: #404040;
+      --n-500: #737373;
+      --n-400: #a3a3a3;
+
+      --red:        #ef4444;
+      --silver:     #94a3b8;
+      --bronze:     #b45309;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--n-950);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Radial gold glow */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(201, 168, 76, 0.13), transparent 55%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Top Bar ─────────────────────────────── */
+    .top-bar {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.6vh 3vw;
+      border-bottom: 1px solid rgba(201, 168, 76, 0.2);
+      background: rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(10px);
+      flex-shrink: 0;
+    }
+
+    /* Left — brand */
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2vh;
+    }
+
+    .brand-eyebrow {
+      font-size: 0.9vw;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    .brand-name {
+      font-size: 2vw;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+
+    /* Center — title */
+    .top-center {
+      text-align: center;
+    }
+
+    .top-eyebrow {
+      font-size: 0.85vw;
+      letter-spacing: 0.5em;
+      text-transform: uppercase;
+      color: var(--n-400);
+      font-weight: 700;
+    }
+
+    .top-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 2.8vw;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--text);
+    }
+
+    /* Right — live pill + clock */
+    .top-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.6vh;
+    }
+
+    .live-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.5vw;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: 9999px;
+      padding: 0.4vh 1vw;
+    }
+
+    .live-dot {
+      width: 0.55vw;
+      height: 0.55vw;
+      border-radius: 50%;
+      background: var(--red);
+      animation: blink 1.5s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.25; }
+    }
+
+    .live-text {
+      font-size: 0.85vw;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: var(--red);
+    }
+
+    .clock {
+      font-size: 1.1vw;
+      font-family: monospace;
+      color: var(--n-400);
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Main ────────────────────────────────── */
+    .main {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 2vh 3vw 1.5vh;
+      gap: 1.8vh;
+      overflow: hidden;
+    }
+
+    /* ── Podium — Top 3 ──────────────────────── */
+    /* Rendered order in DOM: [#2, #1, #3] so #1 lands on center column */
+    .podium {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr 1fr;
+      gap: 1.5vw;
+      align-items: end;       /* cards "rise" toward the winner */
+      flex-shrink: 0;
+    }
+
+    .podium-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 1.2vw;
+      padding: 2vh 2vw;
+      display: flex;
+      flex-direction: column;
+      gap: 1vh;
+      transition: opacity 0.5s ease;
+    }
+
+    /* Gold glow for winner */
+    .podium-card.is-winner {
+      border-color: rgba(201, 168, 76, 0.35);
+      background: rgba(201, 168, 76, 0.05);
+      box-shadow: 0 0 60px rgba(201, 168, 76, 0.08), inset 0 1px 0 rgba(201, 168, 76, 0.15);
+      padding-top: 3.5vh; /* extra height = podium effect */
+    }
+
+    .podium-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .podium-rank {
+      font-size: 2.8vw;
+      font-weight: 900;
+      line-height: 1;
+      color: var(--n-700);
+    }
+
+    .is-winner  .podium-rank { color: var(--gold); }
+    .is-second  .podium-rank { color: var(--silver); }
+    .is-third   .podium-rank { color: var(--bronze); }
+
+    .podium-vote-block {
+      text-align: right;
+    }
+
+    .podium-votes {
+      font-size: 2.4vw;
+      font-weight: 900;
+      font-family: monospace;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .podium-votes-label {
+      font-size: 0.7vw;
+      color: var(--n-500);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+
+    .podium-model {
+      font-size: 1.7vw;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .is-winner .podium-model { color: var(--gold-light); }
+
+    .podium-owner {
+      font-size: 0.9vw;
+      font-family: monospace;
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    .progress-track {
+      height: 0.45vh;
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.2);
+      transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .is-winner .progress-fill { background: linear-gradient(90deg, var(--gold), var(--gold-light)); }
+    .is-second .progress-fill { background: var(--silver); }
+    .is-third  .progress-fill { background: var(--bronze); }
+
+    /* ── Rest of Board (#4+) ────────────────── */
+    .rest {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7vh;
+      overflow: hidden;
+    }
+
+    .lb-row {
+      display: grid;
+      grid-template-columns: 3.5vw 1fr 9vw 22vw;
+      align-items: center;
+      gap: 1.5vw;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 0.7vw;
+      padding: 1vh 2vw;
+    }
+
+    .lb-rank {
+      font-size: 1.15vw;
+      font-weight: 900;
+      color: var(--n-500);
+      text-align: center;
+    }
+
+    .lb-model {
+      font-size: 1.15vw;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+    }
+
+    .lb-owner {
+      font-size: 0.75vw;
+      font-family: monospace;
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    .lb-votes {
+      font-size: 1.2vw;
+      font-weight: 900;
+      font-family: monospace;
+      text-align: right;
+      color: var(--text);
+    }
+
+    .lb-votes em {
+      font-style: normal;
+      font-size: 0.65vw;
+      color: var(--n-500);
+      font-weight: 400;
+      margin-left: 0.3vw;
+    }
+
+    .lb-bar {
+      height: 0.35vh;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .lb-bar-fill {
+      height: 100%;
+      background: rgba(201, 168, 76, 0.35);
+      border-radius: 9999px;
+      transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── Bottom Bar ──────────────────────────── */
+    .bottom-bar {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.4vh 3vw;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      flex-shrink: 0;
+    }
+
+    .event-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4vh;
+    }
+
+    .event-venue {
+      font-size: 1.1vw;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .event-venue i { color: var(--gold); margin-right: 0.4vw; }
+
+    .event-address {
+      font-size: 0.85vw;
+      color: var(--n-400);
+      font-weight: 500;
+    }
+
+    /* Total votes */
+    .totals {
+      text-align: center;
+    }
+
+    .total-num {
+      font-size: 2.5vw;
+      font-weight: 900;
+      font-family: monospace;
+      color: var(--gold);
+      line-height: 1;
+      transition: color 0.3s;
+    }
+
+    .total-label {
+      font-size: 0.75vw;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      color: var(--n-500);
+      font-weight: 700;
+    }
+
+    /* Scan to vote */
+    .vote-cta {
+      display: flex;
+      align-items: center;
+      gap: 1.5vw;
+    }
+
+    .cta-copy { text-align: right; }
+
+    .cta-label {
+      font-size: 0.75vw;
+      text-transform: uppercase;
+      letter-spacing: 0.3em;
+      color: var(--n-500);
+      font-weight: 700;
+    }
+
+    .cta-action {
+      font-size: 1.5vw;
+      font-weight: 900;
+      color: var(--gold);
+    }
+
+    .qr-box {
+      width: 5.5vw;
+      height: 5.5vw;
+      background: #fff;
+      border-radius: 0.5vw;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-box i { font-size: 3.8vw; color: #171717; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="brand">
+      <div class="brand-eyebrow">Paddock Premiere &bull; March 22</div>
+      <div class="brand-name">The Paddock Society</div>
+    </div>
+
+    <div class="top-center">
+      <div class="top-eyebrow">Live Results</div>
+      <div class="top-title">People's Choice Award</div>
+    </div>
+
+    <div class="top-right">
+      <div class="live-pill">
+        <div class="live-dot"></div>
+        <span class="live-text">LIVE</span>
+      </div>
+      <div class="clock" id="clock">--:-- --</div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="podium" id="podium"></div>
+    <div class="rest"  id="rest"></div>
+  </main>
+
+  <!-- Bottom Bar -->
+  <div class="bottom-bar">
+    <div class="event-info">
+      <div class="event-venue">
+        <i class="fas fa-location-dot"></i>Petrol Lounge
+      </div>
+      <div class="event-address">
+        2631 Kramer Lane, Austin TX 78758 &bull; March 22 &bull; 08:30 AM
+      </div>
+    </div>
+
+    <div class="totals">
+      <div class="total-num" id="total-votes">0</div>
+      <div class="total-label">Total Votes Cast</div>
+    </div>
+
+    <div class="vote-cta">
+      <div class="cta-copy">
+        <div class="cta-label">Cast Your Vote</div>
+        <div class="cta-action">Scan to Vote &rsaquo;</div>
+        <!-- QR encodes: https://onebrownguy.github.io/ThePaddockSociety/vote.html -->
+        <!-- Generate at: qr.io or qrcode-monkey.com once GitHub Pages is live -->
+      </div>
+      <div class="qr-box">
+        <i class="fas fa-qrcode"></i>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── Data ──────────────────────────────────────────────────────────────────
+    //
+    // This is mock data. When your backend is ready, swap the `setInterval`
+    // below with a real fetch() call that returns the same shape:
+    //   [{ id, model, owner, votes }, ...]
+    //
+    let leaderboard = [
+      { id: 1, model: 'Ferrari 296 GTS',     owner: '@mylife_atx',   votes: 247 },
+      { id: 2, model: 'Porsche GT3 RS',      owner: '@redline.9k',   votes: 189 },
+      { id: 3, model: 'Toyota Supra MKV',    owner: '@dotcomjoe',    votes: 156 },
+      { id: 4, model: 'McLaren 720S',         owner: '@senna.vibes',  votes:  98 },
+      { id: 5, model: 'Lamborghini Urus',     owner: '@urbanbull',    votes:  67 },
+      { id: 6, model: 'Mercedes AMG GT',      owner: '@schwarzstern', votes:  45 },
+      { id: 7, model: 'BMW M3 CS',            owner: '@m_division',   votes:  32 },
+    ];
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function sorted() {
+      return [...leaderboard].sort((a, b) => b.votes - a.votes);
+    }
+
+    // ── Render ────────────────────────────────────────────────────────────────
+    function render() {
+      const data     = sorted();
+      const maxVotes = data[0]?.votes || 1;
+      const total    = leaderboard.reduce((s, c) => s + c.votes, 0);
+
+      // Total votes counter
+      document.getElementById('total-votes').textContent = total.toLocaleString();
+
+      // ── Podium: render as [#2, #1, #3] so winner lands in the center column
+      const top3 = [data[1], data[0], data[2]].filter(Boolean);
+      const rankClasses = ['is-second', 'is-winner', 'is-third'];
+
+      document.getElementById('podium').innerHTML = top3.map((car, i) => {
+        const rank = (i === 1) ? 1 : (i === 0) ? 2 : 3; // visual position → actual rank
+        const pct  = Math.round((car.votes / maxVotes) * 100);
+        return `
+          <div class="podium-card ${rankClasses[i]}">
+            <div class="podium-header">
+              <div class="podium-rank">#${rank}</div>
+              <div class="podium-vote-block">
+                <div class="podium-votes">${car.votes.toLocaleString()}</div>
+                <div class="podium-votes-label">votes</div>
+              </div>
+            </div>
+            <div class="podium-model">${car.model}</div>
+            <div class="podium-owner">${car.owner}</div>
+            <div class="progress-track">
+              <div class="progress-fill" style="width:${pct}%"></div>
+            </div>
+          </div>`;
+      }).join('');
+
+      // ── Rest: #4 and beyond
+      document.getElementById('rest').innerHTML = data.slice(3).map((car, i) => {
+        const rank = i + 4;
+        const pct  = Math.round((car.votes / maxVotes) * 100);
+        return `
+          <div class="lb-row">
+            <div class="lb-rank">#${rank}</div>
+            <div>
+              <div class="lb-model">${car.model}</div>
+              <div class="lb-owner">${car.owner}</div>
+            </div>
+            <div class="lb-votes">${car.votes.toLocaleString()}<em>votes</em></div>
+            <div class="lb-bar">
+              <div class="lb-bar-fill" style="width:${pct}%"></div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ── Clock ─────────────────────────────────────────────────────────────────
+    function updateClock() {
+      const now  = new Date();
+      let   h    = now.getHours();
+      const m    = String(now.getMinutes()).padStart(2, '0');
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12 || 12;
+      document.getElementById('clock').textContent = `${h}:${m} ${ampm}`;
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ── Live Vote Simulator ────────────────────────────────────────────────────
+    // Randomly drifts vote counts to demo the live feel.
+    // DELETE this block and uncomment fetchVotes() below when your backend is ready.
+    function simulateVotes() {
+      const idx = Math.floor(Math.random() * leaderboard.length);
+      leaderboard[idx].votes += Math.floor(Math.random() * 4) + 1;
+      render();
+    }
+
+    setInterval(simulateVotes, 3000);
+
+    // ── Real Backend (swap in when ready) ─────────────────────────────────────
+    // Replace the simulator above with this block.
+    // Your API should return JSON matching the leaderboard shape above.
+    //
+    // async function fetchVotes() {
+    //   try {
+    //     const res  = await fetch('/api/votes');
+    //     const data = await res.json();
+    //     leaderboard = data;
+    //     render();
+    //   } catch (err) {
+    //     console.warn('Vote fetch failed, retrying...', err);
+    //   }
+    // }
+    //
+    // setInterval(fetchVotes, 5000);
+    // fetchVotes();
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    render();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>People's Choice — Paddock Premiere</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold:       #C9A84C;
+      --gold-light: #E8C97A;
+      --gold-dim:   #7A6228;
+      --black:      #080808;
+      --surface:    #101010;
+      --surface-2:  #161616;
+      --surface-3:  #222222;
+      --border:     #2A2A2A;
+      --text:       #F0ECE4;
+      --text-muted: #777;
+      --green:      #22C55E;
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-sans:  'Outfit', system-ui, sans-serif;
+      --bar-h:      72px; /* bottom bar height */
+    }
+
+    html {
+      background: var(--black);
+      color: var(--text);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      min-height: 100dvh;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    /* ─────────────────────────────────────── SCREEN SYSTEM */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ─────────────────────────────────────── VOTE SCREEN */
+
+    /* Header */
+    .vote-header {
+      padding: 28px 20px 0;
+      text-align: center;
+    }
+
+    .vote-eyebrow {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 6px;
+    }
+
+    .vote-title {
+      font-family: var(--font-serif);
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+
+    .vote-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .vote-sub strong { color: var(--text); font-weight: 600; }
+
+    .vote-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 0 -20px;
+    }
+
+    /* Search */
+    .vote-search {
+      padding: 14px 16px 0;
+    }
+
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      display: flex;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      padding: 11px 40px 11px 40px;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+
+    .search-input:focus { border-color: var(--gold-dim); }
+    .search-input::placeholder { color: var(--text-muted); }
+
+    .search-clear {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--surface-3);
+      border: none;
+      color: var(--text-muted);
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 11px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .search-clear.visible { display: flex; }
+
+    /* Category tabs */
+    .vote-tabs-wrap {
+      padding: 10px 16px 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .vote-tabs-wrap::-webkit-scrollbar { display: none; }
+
+    .vote-tabs {
+      display: flex;
+      gap: 6px;
+      padding-bottom: 10px;
+      width: max-content;
+    }
+
+    .vtab {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: all 0.18s;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .vtab:hover { border-color: var(--gold-dim); color: var(--text); }
+
+    .vtab.active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: var(--black);
+      font-weight: 700;
+    }
+
+    /* Car grid */
+    .car-count {
+      padding: 8px 16px 4px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .cars-grid {
+      padding: 0 12px calc(var(--bar-h) + 20px);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    @media (min-width: 480px) {
+      .cars-grid { grid-template-columns: 1fr 1fr 1fr; padding: 0 16px calc(var(--bar-h) + 20px); }
+    }
+
+    /* Car card */
+    .car-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 13px 12px 12px;
+      cursor: pointer;
+      transition: border-color 0.18s, background 0.18s, transform 0.1s;
+      position: relative;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .car-card:active { transform: scale(0.97); }
+
+    .car-card.selected {
+      border-color: var(--gold);
+      background: rgba(201,168,76,0.07);
+    }
+
+    .car-card.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 8px; right: 9px;
+      width: 20px; height: 20px;
+      background: var(--gold);
+      color: #0a0800;
+      font-size: 11px;
+      font-weight: 800;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 20px;
+      text-align: center;
+    }
+
+    .cc-badge {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 7px;
+    }
+
+    .badge-instagram { background: rgba(201,168,76,0.13); color: #D4A84B; }
+    .badge-jdm       { background: rgba(239,68,68,0.12);  color: #FC8181; }
+    .badge-euro      { background: rgba(96,165,250,0.12); color: #60A5FA; }
+    .badge-domestic  { background: rgba(156,163,175,0.1); color: #9CA3AF; }
+    .badge-moto      { background: rgba(167,139,250,0.12);color: #A78BFA; }
+    .badge-classic   { background: rgba(52,211,153,0.12); color: #34D399; }
+
+    .cc-car {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+      margin-bottom: 3px;
+    }
+
+    .cc-handle {
+      font-size: 12px;
+      color: var(--gold);
+      font-weight: 400;
+    }
+
+    /* Empty */
+    .vote-empty {
+      grid-column: 1 / -1;
+      padding: 48px 16px;
+      text-align: center;
+    }
+
+    .vote-empty-icon { font-size: 36px; margin-bottom: 12px; }
+    .vote-empty-h    { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .vote-empty-p    { font-size: 13px; color: var(--text-muted); }
+
+    /* ─────────────────────────────────────── BOTTOM BAR */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 640px;
+      height: var(--bar-h);
+      background: rgba(8,8,8,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 200;
+      transition: opacity 0.2s;
+    }
+
+    .bar-selection {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .bar-hint {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .bar-car {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bar-handle {
+      font-size: 12px;
+      color: var(--gold);
+    }
+
+    .btn-cast {
+      background: var(--gold);
+      color: #0a0800;
+      border: none;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 12px 22px;
+      border-radius: 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: opacity 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-cast:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    .btn-cast:not(:disabled):active { transform: scale(0.96); }
+
+    /* ─────────────────────────────────────── CONFIRM OVERLAY */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.78);
+      z-index: 500;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s;
+    }
+
+    .overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    @media (min-width: 480px) {
+      .overlay { align-items: center; padding: 20px; }
+    }
+
+    .modal {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 420px;
+      padding: 20px 20px 36px;
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+    }
+
+    @media (min-width: 480px) {
+      .modal {
+        border-radius: 16px;
+        padding: 26px 24px;
+        transform: scale(0.96);
+        max-width: 360px;
+      }
+      .overlay.open .modal { transform: scale(1); }
+    }
+
+    .overlay.open .modal { transform: translateY(0); }
+
+    .modal-pill {
+      width: 38px; height: 4px;
+      background: var(--surface-3);
+      border-radius: 2px;
+      margin: 0 auto 18px;
+    }
+
+    @media (min-width: 480px) { .modal-pill { display: none; } }
+
+    .modal-icon    { font-size: 30px; margin-bottom: 10px; }
+    .modal-title   { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 7px; }
+    .modal-body    { font-size: 14px; color: var(--text-muted); line-height: 1.55; margin-bottom: 20px; }
+    .modal-body strong { color: var(--text); font-weight: 600; }
+
+    .modal-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn-cancel {
+      background: var(--surface-3);
+      border: none;
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 500;
+      padding: 13px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .btn-confirm {
+      background: var(--gold);
+      border: none;
+      color: #0a0800;
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 700;
+      padding: 13px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    /* ─────────────────────────────────────── THANK YOU SCREEN */
+    #screenThanks {
+      min-height: 100dvh;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px 60px;
+      text-align: center;
+    }
+
+    #screenThanks.active {
+      display: flex;
+    }
+
+    .ty-checkmark {
+      width: 72px; height: 72px;
+      background: rgba(34,197,94,0.12);
+      border: 2px solid var(--green);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+    }
+
+    .ty-checkmark svg { width: 34px; height: 34px; color: var(--green); }
+
+    .ty-eyebrow {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 6px;
+    }
+
+    .ty-title {
+      font-family: var(--font-serif);
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+
+    .ty-car {
+      font-family: var(--font-serif);
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+
+    .ty-handle {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+
+    .ty-divider {
+      width: 48px; height: 1px;
+      background: var(--border);
+      margin: 0 auto 28px;
+    }
+
+    .ty-body {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      max-width: 300px;
+      margin: 0 auto 32px;
+    }
+
+    .ty-body strong { color: var(--text); }
+
+    .ty-time {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      opacity: 0.7;
+    }
+
+    .btn-social {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--gold);
+      color: #0a0800;
+      border: none;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 14px 28px;
+      border-radius: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      margin-bottom: 14px;
+    }
+
+    .btn-back {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 12px 28px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: block;
+    }
+
+    .ty-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Already voted screen */
+    #screenAlready {
+      min-height: 100dvh;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px 60px;
+      text-align: center;
+    }
+
+    #screenAlready.active { display: flex; }
+
+    .av-icon { font-size: 48px; margin-bottom: 20px; }
+
+    .av-title {
+      font-family: var(--font-serif);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .av-body {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      max-width: 280px;
+      margin: 0 auto 8px;
+    }
+
+    .av-car {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+
+    .av-handle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+
+    .av-time {
+      font-size: 12px;
+      color: var(--text-muted);
+      opacity: 0.6;
+      margin-bottom: 32px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%) translateY(40px);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 10px 20px;
+      border-radius: 100px;
+      white-space: nowrap;
+      z-index: 900;
+      pointer-events: none;
+      transition: transform 0.25s, opacity 0.25s;
+      opacity: 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════════════════════════ VOTE SCREEN -->
+  <div id="screenVote" class="screen active">
+
+    <header class="vote-header">
+      <div class="vote-eyebrow">The Paddock Society · Paddock Premiere</div>
+      <div class="vote-title">People's Choice</div>
+      <div class="vote-sub">Pick your favorite build on the grid.<br><strong>One vote per person.</strong></div>
+      <div class="vote-divider"></div>
+    </header>
+
+    <div class="vote-search">
+      <div class="search-wrap">
+        <span class="search-icon">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </span>
+        <input
+          id="voteSearch"
+          class="search-input"
+          type="search"
+          placeholder="Search car or @handle…"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+        >
+        <button class="search-clear" id="voteClear" aria-label="Clear">✕</button>
+      </div>
+    </div>
+
+    <div class="vote-tabs-wrap">
+      <div class="vote-tabs" id="voteTabs">
+        <button class="vtab active" data-cat="all">All</button>
+        <button class="vtab" data-cat="instagram">Confirmed</button>
+        <button class="vtab" data-cat="jdm">JDM</button>
+        <button class="vtab" data-cat="euro">Euro</button>
+        <button class="vtab" data-cat="domestic">Domestic</button>
+        <button class="vtab" data-cat="moto">Moto</button>
+        <button class="vtab" data-cat="classic">Classic</button>
+      </div>
+    </div>
+
+    <div class="car-count" id="carCount"></div>
+
+    <div class="cars-grid" id="carsGrid"></div>
+
+  </div><!-- /screenVote -->
+
+  <!-- ══════════════════════════════════ THANK YOU SCREEN -->
+  <div id="screenThanks" class="screen">
+    <div class="ty-checkmark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <div class="ty-eyebrow">Vote Cast</div>
+    <div class="ty-title">You're on the board.</div>
+    <div class="ty-car"  id="tyCarName"></div>
+    <div class="ty-handle" id="tyHandle"></div>
+    <div class="ty-divider"></div>
+    <div class="ty-body">Your vote is in. Results go live on the big screen — keep an eye on the leaderboard display.</div>
+    <div class="ty-time" id="tyTime"></div>
+    <div class="ty-actions">
+      <a href="https://www.instagram.com/the_paddocksociety/" target="_blank" class="btn-social">
+        Follow @the_paddocksociety
+      </a>
+      <button class="btn-back" id="btnBackToEvent">← Back to event page</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ ALREADY VOTED SCREEN -->
+  <div id="screenAlready" class="screen">
+    <div class="av-icon">🏁</div>
+    <div class="av-title">You already voted.</div>
+    <div class="av-body">Your vote is locked in for:</div>
+    <div class="av-car"    id="avCarName"></div>
+    <div class="av-handle" id="avHandle"></div>
+    <div class="av-time"   id="avTime"></div>
+    <div class="ty-actions">
+      <a href="https://www.instagram.com/the_paddocksociety/" target="_blank" class="btn-social">
+        Follow @the_paddocksociety
+      </a>
+      <button class="btn-back" id="btnBackFromAlready">← Back to event page</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ BOTTOM BAR (vote screen only) -->
+  <div class="bottom-bar" id="bottomBar">
+    <div class="bar-selection">
+      <div class="bar-hint" id="barHint">Tap a car to select</div>
+      <div class="bar-car"  id="barCar"  style="display:none"></div>
+      <div class="bar-handle" id="barHandle" style="display:none"></div>
+    </div>
+    <button class="btn-cast" id="btnCast" disabled>Cast Vote →</button>
+  </div>
+
+  <!-- ══════════════════════════════════ CONFIRM MODAL -->
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modal-pill"></div>
+      <div class="modal-icon">🏆</div>
+      <div class="modal-title">Confirm Your Vote</div>
+      <div class="modal-body" id="modalBody">Cast your vote for this car?</div>
+      <div class="modal-btns">
+        <button class="btn-cancel"  id="modalCancel">Cancel</button>
+        <button class="btn-confirm" id="modalConfirm">Vote ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// CARS DATA — matches checkin.html exactly
+// ═══════════════════════════════════════════════════════
+const CARS = [
+  { id:  1, car: "Chevrolet Corvette",           handle: "@sounddarde",           category: "instagram" },
+  { id:  2, car: "BMW M4",                       handle: "@kevindegroot7777",     category: "instagram" },
+  { id:  3, car: "Ferrari 458 Italia",           handle: "@chrischavarro",        category: "instagram" },
+  { id:  4, car: "BMW M4",                       handle: "@aaronjoelgeorge",      category: "instagram" },
+  { id:  5, car: "Mercedes-Benz GLC63 AMG",      handle: "@gyat.amg",             category: "instagram" },
+  { id:  6, car: "Nissan GT-R R35 (Purple)",     handle: "@gcg_habits",           category: "instagram" },
+  { id:  7, car: "Ford Mustang S650",            handle: "@mako_s650",            category: "instagram" },
+  { id:  8, car: "Ford Mustang S650",            handle: "@thatblackwidows650",   category: "instagram" },
+  { id:  9, car: "Honda Civic FK8 Type R LE",   handle: "@type_raichu",          category: "instagram" },
+  { id: 10, car: "Mercedes-Benz AMG",            handle: "@dgb1031",              category: "instagram" },
+  { id: 11, car: "Chevrolet Camaro (Modded)",    handle: "@ss.pao.66",            category: "instagram" },
+  { id: 12, car: "AMS Alpha GT-R R35",           handle: "@instabraad",           category: "instagram" },
+  { id: 13, car: "Nissan GT-R R35",              handle: "@r35.aus",              category: "jdm" },
+  { id: 14, car: "Toyota Supra MK4",             handle: "@supra_atx",            category: "jdm" },
+  { id: 15, car: "Honda S2000",                  handle: "@s2k_tx",               category: "jdm" },
+  { id: 16, car: "Mazda RX-7 FD",                handle: "@fd3s_atx",             category: "jdm" },
+  { id: 17, car: "Mitsubishi Evo IX",            handle: "@evo9_atx",             category: "jdm" },
+  { id: 18, car: "Subaru WRX STI",               handle: "@sti_austin",           category: "jdm" },
+  { id: 19, car: "Honda Civic Type R FK8",       handle: "@fk8_atx",              category: "jdm" },
+  { id: 20, car: "BMW M3 E46",                   handle: "@e46m3_atx",            category: "euro" },
+  { id: 21, car: "Porsche 911 GT3",              handle: "@gt3_atx",              category: "euro" },
+  { id: 22, car: "Mercedes-AMG C63",             handle: "@amgc63_tx",            category: "euro" },
+  { id: 23, car: "Audi RS3",                     handle: "@rs3_austin",           category: "euro" },
+  { id: 24, car: "VW Golf R",                    handle: "@golfr_atx",            category: "euro" },
+  { id: 25, car: "Ford Focus RS",                handle: "@naegerter_rs",         category: "domestic" },
+  { id: 26, car: "Dodge Challenger SRT Hellcat", handle: "@bagd717",              category: "domestic" },
+  { id: 27, car: "Dodge Charger R/T",            handle: "@garza_5.7",            category: "domestic" },
+  { id: 28, car: "Chevrolet Corvette C6",        handle: "@fulloppc5",            category: "domestic" },
+  { id: 29, car: "Chevrolet Camaro 4th Gen",     handle: "@arii_soss",            category: "domestic" },
+  { id: 30, car: "Chrysler 300 SRT",             handle: "@james.king300",        category: "domestic" },
+  { id: 31, car: "BMW S1000RR",                  handle: "@s1kjoe",               category: "moto" },
+  { id: 32, car: "Kawasaki ZX6R",                handle: "@meezzy.6r",            category: "moto" },
+  { id: 33, car: "Honda CBR",                    handle: "@cbr_1krrr",            category: "moto" },
+  { id: 34, car: "Legion Bike Club",             handle: "@legionbikeandcarclub",  category: "moto" },
+  { id: 35, car: "VW Beetle '66",               handle: "@la_pulga_08",          category: "classic" },
+  { id: 36, car: "VW Beetle (Red)",              handle: "@eli_mtzvolks",         category: "classic" },
+  { id: 37, car: "Custom Truck",                 handle: "@maxxribble",           category: "classic" },
+  { id: 38, car: "Lightning McQueen ⚡",         handle: "@kaitlyn_france95",     category: "classic" },
+];
+
+const CAT_LABELS = {
+  instagram: "Confirmed", jdm: "JDM", euro: "Euro",
+  domestic: "Domestic",   moto: "Moto", classic: "Classic",
+};
+
+// ═══════════════════════════════════════════════════════
+// LOCALSTORAGE
+// ═══════════════════════════════════════════════════════
+const LS_VOTE = "paddock_vote_v1";
+
+function getVote() {
+  try { return JSON.parse(localStorage.getItem(LS_VOTE)); }
+  catch { return null; }
+}
+
+function saveVote(carId) {
+  const car = CARS.find(c => c.id === carId);
+  const record = {
+    carId,
+    carName: car.car,
+    handle:  car.handle,
+    time:    new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }),
+    ts:      Date.now(),
+  };
+  localStorage.setItem(LS_VOTE, JSON.stringify(record));
+
+  // ─────────────────────────────────────────────────────
+  // TODO — SUPABASE INTEGRATION
+  // Replace the localStorage-only save above with a real
+  // database write so votes aggregate across all devices:
+  //
+  // import { createClient } from '@supabase/supabase-js'
+  // const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  // await supabase.from('votes').insert({ car_id: carId, car_name: car.car, ... })
+  //
+  // The TV leaderboard (paddock-society-tv.html) should then
+  // subscribe to this table with supabase.channel().on('postgres_changes')
+  // instead of using the random vote simulator it currently has.
+  // ─────────────────────────────────────────────────────
+
+  return record;
+}
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let selectedId  = null;
+let activeTab   = "all";
+let searchQuery = "";
+
+// ═══════════════════════════════════════════════════════
+// INIT — check if already voted
+// ═══════════════════════════════════════════════════════
+(function init() {
+  const prior = getVote();
+  if (prior) {
+    showAlreadyVoted(prior);
+    return;
+  }
+  renderCards();
+})();
+
+// ═══════════════════════════════════════════════════════
+// SCREENS
+// ═══════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.getElementById("bottomBar").style.display =
+    id === "screenVote" ? "flex" : "none";
+}
+
+function showAlreadyVoted(record) {
+  document.getElementById("avCarName").textContent = record.carName;
+  document.getElementById("avHandle").textContent  = record.handle;
+  document.getElementById("avTime").textContent    = `Voted at ${record.time}`;
+  showScreen("screenAlready");
+}
+
+function showThanks(record) {
+  document.getElementById("tyCarName").textContent = record.carName;
+  document.getElementById("tyHandle").textContent  = record.handle;
+  document.getElementById("tyTime").textContent    = `Voted at ${record.time}`;
+  showScreen("screenThanks");
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════
+function filtered() {
+  const q = searchQuery.toLowerCase();
+  return CARS.filter(c => {
+    const matchTab = activeTab === "all" || c.category === activeTab;
+    const matchQ   = !q || c.car.toLowerCase().includes(q) || c.handle.toLowerCase().includes(q);
+    return matchTab && matchQ;
+  });
+}
+
+function renderCards() {
+  const grid = document.getElementById("carsGrid");
+  const list = filtered();
+
+  document.getElementById("carCount").textContent =
+    list.length ? `${list.length} vehicle${list.length !== 1 ? "s" : ""}` : "";
+
+  if (!list.length) {
+    grid.innerHTML = `
+      <div class="vote-empty">
+        <div class="vote-empty-icon">🔍</div>
+        <div class="vote-empty-h">No vehicles found</div>
+        <div class="vote-empty-p">Try a different search or category.</div>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map(c => `
+    <div class="car-card${selectedId === c.id ? " selected" : ""}"
+         data-id="${c.id}"
+         role="button"
+         aria-pressed="${selectedId === c.id}"
+         tabindex="0">
+      <span class="cc-badge badge-${esc(c.category)}">${esc(CAT_LABELS[c.category])}</span>
+      <div class="cc-car">${esc(c.car)}</div>
+      <div class="cc-handle">${esc(c.handle)}</div>
+    </div>`).join("");
+}
+
+function updateBar() {
+  const hint   = document.getElementById("barHint");
+  const carEl  = document.getElementById("barCar");
+  const hndEl  = document.getElementById("barHandle");
+  const castBtn = document.getElementById("btnCast");
+
+  if (!selectedId) {
+    hint.style.display   = "";
+    carEl.style.display  = "none";
+    hndEl.style.display  = "none";
+    castBtn.disabled     = true;
+    return;
+  }
+
+  const car = CARS.find(c => c.id === selectedId);
+  hint.style.display    = "none";
+  carEl.style.display   = "";
+  hndEl.style.display   = "";
+  carEl.textContent     = car.car;
+  hndEl.textContent     = car.handle;
+  castBtn.disabled      = false;
+}
+
+// ═══════════════════════════════════════════════════════
+// EVENTS — car grid (delegated)
+// ═══════════════════════════════════════════════════════
+document.getElementById("carsGrid").addEventListener("click", e => {
+  const card = e.target.closest("[data-id]");
+  if (!card) return;
+  const id = parseInt(card.dataset.id, 10);
+  selectedId = (selectedId === id) ? null : id; // tap again = deselect
+  renderCards();
+  updateBar();
+});
+
+// keyboard support
+document.getElementById("carsGrid").addEventListener("keydown", e => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const card = e.target.closest("[data-id]");
+  if (!card) return;
+  e.preventDefault();
+  card.click();
+});
+
+// ═══════════════════════════════════════════════════════
+// EVENTS — search
+// ═══════════════════════════════════════════════════════
+const voteSearch = document.getElementById("voteSearch");
+const voteClear  = document.getElementById("voteClear");
+
+voteSearch.addEventListener("input", () => {
+  searchQuery = voteSearch.value.trim();
+  voteClear.classList.toggle("visible", searchQuery.length > 0);
+  renderCards();
+});
+
+voteClear.addEventListener("click", () => {
+  voteSearch.value = "";
+  searchQuery = "";
+  voteClear.classList.remove("visible");
+  voteSearch.focus();
+  renderCards();
+});
+
+// ═══════════════════════════════════════════════════════
+// EVENTS — tabs
+// ═══════════════════════════════════════════════════════
+document.getElementById("voteTabs").addEventListener("click", e => {
+  const btn = e.target.closest("[data-cat]");
+  if (!btn) return;
+  activeTab = btn.dataset.cat;
+  document.querySelectorAll(".vtab").forEach(t =>
+    t.classList.toggle("active", t.dataset.cat === activeTab)
+  );
+  renderCards();
+});
+
+// ═══════════════════════════════════════════════════════
+// EVENTS — cast vote button
+// ═══════════════════════════════════════════════════════
+document.getElementById("btnCast").addEventListener("click", () => {
+  if (!selectedId) return;
+  const car = CARS.find(c => c.id === selectedId);
+  document.getElementById("modalBody").innerHTML =
+    `Cast your vote for <strong>${esc(car.car)}</strong> ${esc(car.handle)}?`;
+  document.getElementById("overlay").classList.add("open");
+});
+
+// ═══════════════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════════════
+document.getElementById("modalCancel").addEventListener("click", () => {
+  document.getElementById("overlay").classList.remove("open");
+});
+
+document.getElementById("overlay").addEventListener("click", e => {
+  if (e.target === e.currentTarget)
+    document.getElementById("overlay").classList.remove("open");
+});
+
+document.getElementById("modalConfirm").addEventListener("click", () => {
+  document.getElementById("overlay").classList.remove("open");
+  if (!selectedId) return;
+  const record = saveVote(selectedId);
+  showThanks(record);
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape")
+    document.getElementById("overlay").classList.remove("open");
+});
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION — back buttons
+// ═══════════════════════════════════════════════════════
+document.getElementById("btnBackToEvent").addEventListener("click", () => {
+  window.location.href = "paddock-society-patron.html";
+});
+
+document.getElementById("btnBackFromAlready").addEventListener("click", () => {
+  window.location.href = "paddock-society-patron.html";
+});
+
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+function esc(s) {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+</script>
+</body>
+</html>
