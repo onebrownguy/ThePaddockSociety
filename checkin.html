@@ -330,6 +330,14 @@
       color: var(--gold);
       font-weight: 400;
     }
+    .handle-link {
+      color: inherit;
+      text-decoration: none;
+    }
+    .handle-link:hover {
+      text-decoration: underline;
+      opacity: 0.8;
+    }
 
     .card-footer {
       display: flex;
@@ -932,7 +940,7 @@ function renderCards() {
             </span>` : ""}
         </div>
         <div class="card-car">${esc(c.car)}</div>
-        <div class="card-handle">${esc(c.handle)}</div>
+        <div class="card-handle"><a href="https://www.instagram.com/${c.handle.slice(1)}/" target="_blank" rel="noopener" class="handle-link">${esc(c.handle)}</a></div>
         <div class="card-footer">
           ${arrived
             ? `<span class="card-time">✓ ${esc(time)}</span>

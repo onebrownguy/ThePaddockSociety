@@ -431,6 +431,14 @@
       font-size: 13px;
       color: var(--gold);
     }
+    .handle-link {
+      color: inherit;
+      text-decoration: none;
+    }
+    .handle-link:hover {
+      text-decoration: underline;
+      opacity: 0.8;
+    }
 
     .card-time {
       font-size: 11px;
@@ -749,7 +757,7 @@ function render() {
           }
         </div>
         <div class="card-car">${esc(c.car)}</div>
-        <div class="card-handle">${esc(c.handle)}</div>
+        <div class="card-handle"><a href="https://www.instagram.com/${c.handle.slice(1)}/" target="_blank" rel="noopener" class="handle-link">${esc(c.handle)}</a></div>
         ${isOn ? `<div class="card-time">Arrived ${esc(time)}</div>` : ""}
       </div>`;
   }).join("");
