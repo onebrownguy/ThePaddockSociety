@@ -6,6 +6,7 @@
   <title>Staff Check-In — Paddock Premiere</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -650,6 +651,7 @@
     <div class="header-counter">
       <div class="counter-num" id="counterNum">0 / 38</div>
       <div class="counter-label">Arrived</div>
+      <div id="syncStatus" style="font-size:11px;color:#4ade80;letter-spacing:1px;margin-top:4px;">● LIVE SYNC</div>
     </div>
   </div>
   <div class="progress-bar">
@@ -743,6 +745,13 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
+// ═══════════════════════════════════════════════════════
+// SUPABASE
+// ═══════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://jvfbytiwioerszrcdnvv.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_UghngKnObYPJfcuuQKxVEA_lwZALRDw';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 // ═══════════════════════════════════════════════════════
 // DATA — confirmed vehicles (sourced from @the_paddocksociety IG)
 // ═══════════════════════════════════════════════════════
@@ -838,6 +847,15 @@ function setCheckin(id, on) {
     delete c[id];
   }
   localStorage.setItem(LS_CHECKINS, JSON.stringify(c));
+
+  // Supabase sync — fire and forget
+  const state = c[id] || { on: false };
+  db.from('checkins').upsert({
+    car_id: id,
+    on_grid: on,
+    arrived_at: on ? new Date().toISOString() : null,
+    updated_at: new Date().toISOString()
+  }).then(({error}) => { if(error) console.warn('Supabase sync error:', error.message); });
 }
 
 function clearCheckins() {
@@ -1141,9 +1159,34 @@ function esc(str) {
 }
 
 // ═══════════════════════════════════════════════════════
+// SUPABASE LOAD
+// ═══════════════════════════════════════════════════════
+async function loadFromSupabase() {
+  try {
+    const { data, error } = await db.from('checkins').select('*');
+    if (error) throw error;
+    if (data && data.length > 0) {
+      const merged = {};
+      data.forEach(row => {
+        merged[row.car_id] = {
+          on: row.on_grid,
+          time: row.arrived_at ? new Date(row.arrived_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true}) : null
+        };
+      });
+      localStorage.setItem('paddock_checkins_v1', JSON.stringify(merged));
+    }
+  } catch(e) {
+    console.warn('Could not load from Supabase, using localStorage:', e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════
-renderAll();
+(async function init() {
+  await loadFromSupabase();
+  renderAll();
+})();
 </script>
 </body>
 </html>

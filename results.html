@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>People's Choice Results — Paddock Premiere</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold:        #C9A84C;
+      --gold-light:  #E8C97A;
+      --gold-dim:    #7A6228;
+      --gold-glow:   rgba(201,168,76,0.25);
+      --black:       #080808;
+      --surface:     #101010;
+      --surface-2:   #161616;
+      --surface-3:   #222222;
+      --border:      #2A2A2A;
+      --text:        #F0ECE4;
+      --text-muted:  #777;
+      --green:       #22C55E;
+      --green-bg:    #0C1F11;
+      --green-bdr:   #1A3D22;
+      --font-serif:  'Cormorant Garamond', Georgia, serif;
+      --font-sans:   'Outfit', system-ui, sans-serif;
+    }
+
+    html {
+      background: var(--black);
+      color: var(--text);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      min-height: 100dvh;
+      max-width: 760px;
+      margin: 0 auto;
+      padding-bottom: 48px;
+    }
+
+    /* ── HEADER ─────────────────────────────────────── */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--black);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 20px 14px;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .wordmark {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+
+    .page-title {
+      font-family: var(--font-serif);
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    /* Live pill */
+    .live-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid var(--green-bdr);
+      border-radius: 20px;
+      padding: 5px 12px 5px 9px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s ease infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.45; transform: scale(0.8); }
+    }
+
+    .live-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--green);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .stat-block {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .stat-num {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .stat-divider {
+      width: 1px;
+      height: 28px;
+      background: var(--border);
+    }
+
+    .close-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.03em;
+    }
+
+    /* ── NAV ───────────────────────────────────────── */
+    .nav-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      padding: 10px 20px 0;
+      transition: color 0.18s;
+    }
+
+    .nav-back:hover { color: var(--text); }
+
+    /* ── LEADERBOARD ────────────────────────────────── */
+    .leaderboard {
+      padding: 16px 16px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* ── WINNER CARD ────────────────────────────────── */
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.25s;
+    }
+
+    .result-card.winner {
+      background: linear-gradient(135deg, #141008 0%, #0e0d08 100%);
+      border: 1px solid var(--gold-dim);
+      box-shadow: 0 0 28px var(--gold-glow), 0 0 0 1px rgba(201,168,76,0.12);
+    }
+
+    /* left rank accent stripe */
+    .result-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--border);
+    }
+
+    .result-card.winner::before {
+      background: linear-gradient(180deg, var(--gold-light), var(--gold));
+    }
+
+    .result-card:nth-child(2)::before { background: #c0c0c0; }
+    .result-card:nth-child(3)::before { background: #cd7f32; }
+
+    .card-inner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    /* rank number */
+    .rank {
+      font-family: var(--font-serif);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-muted);
+      min-width: 32px;
+      text-align: center;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .result-card.winner .rank {
+      font-size: 36px;
+      color: var(--gold);
+    }
+
+    .result-card:nth-child(2) .rank { color: #c0c0c0; }
+    .result-card:nth-child(3) .rank { color: #cd7f32; }
+
+    /* car info */
+    .car-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .car-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .result-card.winner .car-name {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .car-handle {
+      font-size: 13px;
+      color: var(--gold);
+    }
+
+    .handle-link {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .handle-link:hover {
+      text-decoration: underline;
+      opacity: 0.8;
+    }
+
+    /* vote count */
+    .vote-count {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .vote-num {
+      font-family: var(--font-serif);
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1;
+    }
+
+    .result-card.winner .vote-num {
+      font-size: 32px;
+    }
+
+    .vote-word {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    /* progress bar */
+    .progress-wrap {
+      margin-top: 10px;
+    }
+
+    .progress-track {
+      height: 4px;
+      background: var(--surface-3);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+      transition: width 0.6s cubic-bezier(.4,0,.2,1);
+      min-width: 0;
+    }
+
+    .result-card.winner .progress-fill {
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    }
+
+    /* winner crown badge */
+    .winner-badge {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      background: rgba(201,168,76,0.1);
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 4px;
+      padding: 3px 8px;
+    }
+
+    /* ── EMPTY / LOADING ────────────────────────────── */
+    .state-box {
+      padding: 64px 20px;
+      text-align: center;
+    }
+
+    .state-icon {
+      font-size: 42px;
+      margin-bottom: 14px;
+    }
+
+    .state-h {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .state-p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* spinner */
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--surface-3);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ─────────────────────────────────────────── -->
+<header class="header">
+  <div class="header-top">
+    <div>
+      <div class="wordmark">The Paddock Society</div>
+      <div class="page-title">People's Choice Results</div>
+    </div>
+    <div class="live-pill">
+      <div class="live-dot"></div>
+      <span class="live-label">Live</span>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-block">
+      <div class="stat-num" id="totalVotes">—</div>
+      <div class="stat-label">Total Votes</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-block">
+      <div class="stat-num" id="totalCars">—</div>
+      <div class="stat-label">Cars Voted</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="close-note">Votes close at 10:45 AM</div>
+  </div>
+</header>
+
+<!-- ── NAV ────────────────────────────────────────────── -->
+<a href="index.html" class="nav-back">← Back to event</a>
+
+<!-- ── LEADERBOARD ────────────────────────────────────── -->
+<div class="leaderboard" id="leaderboard">
+  <div class="state-box">
+    <div class="spinner"></div>
+    <div class="state-h">Loading results…</div>
+    <div class="state-p">Fetching live vote counts from the database.</div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// SUPABASE
+// ═══════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://jvfbytiwioerszrcdnvv.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_UghngKnObYPJfcuuQKxVEA_lwZALRDw';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+function esc(s) {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function ordinal(n) {
+  if (n === 1) return "#1";
+  if (n === 2) return "#2";
+  if (n === 3) return "#3";
+  return `#${n}`;
+}
+
+// ═══════════════════════════════════════════════════════
+// AGGREGATE VOTES
+// ═══════════════════════════════════════════════════════
+function aggregateVotes(rows) {
+  // Group by car_id, count votes, keep car_name + handle
+  const map = {};
+  rows.forEach(row => {
+    const key = row.car_id;
+    if (!map[key]) {
+      map[key] = { car_id: row.car_id, car_name: row.car_name, handle: row.handle, count: 0 };
+    }
+    map[key].count++;
+  });
+  // Sort descending by count
+  return Object.values(map).sort((a, b) => b.count - a.count);
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════
+function render(rows) {
+  const board = document.getElementById("leaderboard");
+
+  if (!rows || rows.length === 0) {
+    board.innerHTML = `
+      <div class="state-box">
+        <div class="state-icon">🏁</div>
+        <div class="state-h">No votes yet</div>
+        <div class="state-p">Results will appear here as guests cast their People's Choice votes.</div>
+      </div>`;
+    document.getElementById("totalVotes").textContent = "0";
+    document.getElementById("totalCars").textContent  = "0";
+    return;
+  }
+
+  const tally = aggregateVotes(rows);
+  const maxVotes = tally[0].count;
+  const totalVotes = rows.length;
+
+  document.getElementById("totalVotes").textContent = totalVotes;
+  document.getElementById("totalCars").textContent  = tally.length;
+
+  board.innerHTML = tally.map((entry, i) => {
+    const rank   = i + 1;
+    const isWin  = rank === 1;
+    const pct    = maxVotes > 0 ? Math.round((entry.count / maxVotes) * 100) : 0;
+    const handle = entry.handle || "";
+    const slug   = handle.startsWith("@") ? handle.slice(1) : handle;
+
+    return `
+      <div class="result-card${isWin ? " winner" : ""}">
+        ${isWin ? '<div class="winner-badge">People\'s Choice</div>' : ""}
+        <div class="card-inner">
+          <div class="rank">${esc(ordinal(rank))}</div>
+          <div class="car-info">
+            <div class="car-name">${esc(entry.car_name)}</div>
+            <div class="car-handle">
+              ${slug
+                ? `<a href="https://www.instagram.com/${esc(slug)}/" target="_blank" rel="noopener" class="handle-link">${esc(handle)}</a>`
+                : esc(handle)
+              }
+            </div>
+          </div>
+          <div class="vote-count">
+            <div class="vote-num">${entry.count}</div>
+            <div class="vote-word">${entry.count === 1 ? "vote" : "votes"}</div>
+          </div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-track">
+            <div class="progress-fill" style="width:${pct}%"></div>
+          </div>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT — fetch + subscribe
+// ═══════════════════════════════════════════════════════
+let cachedRows = [];
+
+async function fetchAndRender() {
+  try {
+    const { data, error } = await db.from('votes').select('car_id, car_name, handle');
+    if (error) throw error;
+    cachedRows = data || [];
+    render(cachedRows);
+  } catch(e) {
+    console.warn('Results fetch error:', e.message);
+    document.getElementById("leaderboard").innerHTML = `
+      <div class="state-box">
+        <div class="state-icon">⚠️</div>
+        <div class="state-h">Could not load results</div>
+        <div class="state-p">Check your connection and refresh the page.</div>
+      </div>`;
+  }
+}
+
+(async function init() {
+  await fetchAndRender();
+
+  // Real-time subscription — re-render on every vote change
+  db.channel('votes-results')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'votes' },
+      async () => {
+        // Re-fetch full dataset to keep counts accurate
+        await fetchAndRender();
+      }
+    )
+    .subscribe();
+})();
+</script>
+</body>
+</html>

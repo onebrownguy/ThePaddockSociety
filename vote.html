@@ -6,6 +6,7 @@
   <title>People's Choice — Paddock Premiere</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -759,6 +760,13 @@
 
 <script>
 // ═══════════════════════════════════════════════════════
+// SUPABASE
+// ═══════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://jvfbytiwioerszrcdnvv.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_UghngKnObYPJfcuuQKxVEA_lwZALRDw';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ═══════════════════════════════════════════════════════
 // CARS DATA — matches checkin.html exactly
 // ═══════════════════════════════════════════════════════
 const CARS = [
@@ -808,6 +816,18 @@ const CAT_LABELS = {
 };
 
 // ═══════════════════════════════════════════════════════
+// DEVICE ID
+// ═══════════════════════════════════════════════════════
+function getDeviceId() {
+  let id = localStorage.getItem('paddock_device_id');
+  if (!id) {
+    id = 'dev_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem('paddock_device_id', id);
+  }
+  return id;
+}
+
+// ═══════════════════════════════════════════════════════
 // LOCALSTORAGE
 // ═══════════════════════════════════════════════════════
 const LS_VOTE = "paddock_vote_v1";
@@ -815,6 +835,29 @@ const LS_VOTE = "paddock_vote_v1";
 function getVote() {
   try { return JSON.parse(localStorage.getItem(LS_VOTE)); }
   catch { return null; }
+}
+
+async function checkExistingVote() {
+  const deviceId = getDeviceId();
+  try {
+    const { data } = await db.from('votes').select('*').eq('device_id', deviceId).maybeSingle();
+    if (data) {
+      const record = {
+        carId: data.car_id,
+        carName: data.car_name,
+        handle: data.handle,
+        time: new Date(data.voted_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true})
+      };
+      // Store in localStorage as cache
+      localStorage.setItem('paddock_vote_v1', JSON.stringify(record));
+      return record;
+    }
+  } catch(e) {
+    console.warn('Supabase vote check failed, using localStorage:', e.message);
+  }
+  // Fallback to localStorage
+  const local = localStorage.getItem('paddock_vote_v1');
+  return local ? JSON.parse(local) : null;
 }
 
 function saveVote(carId) {
@@ -828,19 +871,17 @@ function saveVote(carId) {
   };
   localStorage.setItem(LS_VOTE, JSON.stringify(record));
 
-  // ─────────────────────────────────────────────────────
-  // TODO — SUPABASE INTEGRATION
-  // Replace the localStorage-only save above with a real
-  // database write so votes aggregate across all devices:
-  //
-  // import { createClient } from '@supabase/supabase-js'
-  // const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  // await supabase.from('votes').insert({ car_id: carId, car_name: car.car, ... })
-  //
-  // The TV leaderboard (paddock-society-tv.html) should then
-  // subscribe to this table with supabase.channel().on('postgres_changes')
-  // instead of using the random vote simulator it currently has.
-  // ─────────────────────────────────────────────────────
+  // Supabase insert — fire and forget
+  const deviceId = getDeviceId();
+  db.from('votes').insert({
+    device_id: deviceId,
+    car_id: car.id,
+    car_name: car.car,
+    handle: car.handle,
+    voted_at: new Date().toISOString()
+  }).then(({ error }) => {
+    if (error) console.warn('Vote sync error:', error.message);
+  });
 
   return record;
 }
@@ -853,10 +894,10 @@ let activeTab   = "all";
 let searchQuery = "";
 
 // ═══════════════════════════════════════════════════════
-// INIT — check if already voted
+// INIT — check if already voted (async, checks Supabase first)
 // ═══════════════════════════════════════════════════════
-(function init() {
-  const prior = getVote();
+(async function init() {
+  const prior = await checkExistingVote();
   if (prior) {
     showAlreadyVoted(prior);
     return;

@@ -6,6 +6,7 @@
   <title>Tonight's Grid — Paddock Premiere</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -590,6 +591,13 @@
 
 <script>
 // ═══════════════════════════════════════════════════════
+// SUPABASE
+// ═══════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://jvfbytiwioerszrcdnvv.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_UghngKnObYPJfcuuQKxVEA_lwZALRDw';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ═══════════════════════════════════════════════════════
 // CARS — same master list as checkin.html + vote.html
 // ═══════════════════════════════════════════════════════
 const BASE_CARS = [
@@ -832,9 +840,55 @@ function esc(s) {
 }
 
 // ═══════════════════════════════════════════════════════
+// SUPABASE LOAD + REAL-TIME
+// ═══════════════════════════════════════════════════════
+async function loadGridFromSupabase() {
+  try {
+    const { data, error } = await db.from('checkins').select('*');
+    if (error) throw error;
+    if (data) {
+      const state = {};
+      data.forEach(row => {
+        state[row.car_id] = {
+          on: row.on_grid,
+          time: row.arrived_at ? new Date(row.arrived_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true}) : null
+        };
+      });
+      localStorage.setItem('paddock_checkins_v1', JSON.stringify(state));
+    }
+  } catch(e) {
+    console.warn('Supabase fetch failed, using localStorage:', e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════
-render();
+(async function init() {
+  await loadGridFromSupabase();
+  render();
+
+  // Real-time subscription
+  db.channel('checkins-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'checkins' },
+      (payload) => {
+        const row = payload.new || payload.old;
+        if (!row) return;
+        const state = getCheckins();
+        if (payload.eventType === 'DELETE') {
+          delete state[row.car_id];
+        } else {
+          state[row.car_id] = {
+            on: row.on_grid,
+            time: row.arrived_at ? new Date(row.arrived_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true}) : null
+          };
+        }
+        localStorage.setItem('paddock_checkins_v1', JSON.stringify(state));
+        render();
+      }
+    )
+    .subscribe();
+})();
 </script>
 </body>
 </html>
